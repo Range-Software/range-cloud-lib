@@ -236,6 +236,7 @@ void RHttpClient::setHttpClientSettings(const RHttpClientSettings &httpClientSet
         this->networkManager->setProxy(networkProxy);
     }
     this->networkManager->setTransferTimeout(this->httpClientSettings.getTimeout());
+    RLogger::debug("Transfer timeout: %d [ms]\n",this->networkManager->transferTimeout());
     R_LOG_TRACE_OUT;
 }
 
