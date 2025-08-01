@@ -22,6 +22,8 @@ class RHttpServerHandler
 
         //! Handler ID.
         QUuid id;
+        //! Service name.
+        QString serviceName;
         //! Mutex to lock response.
         QMutex syncMutex;
         //! Response message.
@@ -29,7 +31,9 @@ class RHttpServerHandler
 
     public:
 
-        RHttpServerHandler() : id(QUuid::createUuid())
+        RHttpServerHandler()
+            : id(QUuid::createUuid())
+            , serviceName("HttpServerHandler_" + id.toString(QUuid::WithoutBraces))
         {
             R_LOG_TRACE_IN;
             this->syncMutex.lock();
@@ -52,11 +56,18 @@ class RHttpServerHandler
         bool fetchResponseMessage(int timeout, RHttpMessage &responseMessage)
         {
             R_LOG_TRACE_IN;
+            RLogger::debug("[%s] Trylock sync mutex\n",this->serviceName.toUtf8().constData());
             bool lockResult = this->syncMutex.tryLock(timeout);
             if (lockResult)
             {
                 responseMessage = this->responseMessage;
+                RLogger::debug("[%s] Unlock sync mutex\n",this->serviceName.toUtf8().constData());
                 this->syncMutex.unlock();
+                RLogger::debug("[%s] Sync mutex unlocked\n",this->serviceName.toUtf8().constData());
+            }
+            else
+            {
+                RLogger::warning("[%s] Failed to lock sync mutex\n",this->serviceName.toUtf8().constData());
             }
             R_LOG_TRACE_OUT;
             return lockResult;
@@ -397,8 +408,10 @@ QHttpServerResponse RHttpServer::processRequest(
     this->serverHandlerRemove(serverHandler->getId());
     delete serverHandler;
 
+    RLogger::debug("[%s] Create server response\n",this->getServiceName().toUtf8().constData());
     QHttpServerResponse response(responseMessage.getBody(),RHttpMessage::errorTypeToStatusCode(responseMessage.getErrorType()));
     response.setHeaders(responseMessage.getResponseHeaders());
+    RLogger::debug("[%s] Response is ready\n",this->getServiceName().toUtf8().constData());
     return response;
 }
 
