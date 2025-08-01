@@ -166,7 +166,7 @@ RFileInfo RFileInfo::fromString(const QString &line)
 {
     QStringList fields = line.split(RFileInfo::delimiter);
 
-    int expectedNuberOfFields = 8;
+    int expectedNuberOfFields = 9;
     if (fields.size() != expectedNuberOfFields)
     {
         RLogger::warning("Invalid line. Has \'%d\' fields but expected are \'%d\'\n",fields.size(),expectedNuberOfFields);
