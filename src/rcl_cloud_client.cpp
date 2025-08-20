@@ -30,14 +30,13 @@ void RCloudClient::setBlocking(bool blocking)
     R_LOG_TRACE_OUT;
 }
 
-void RCloudClient::requestTest(const QString &responseMessage, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestTest(const QString &responseMessage, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestTest(this->httpClient,responseMessage,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestTest(this->httpClient,responseMessage,authUser,authToken)));
 }
 
-void RCloudClient::requestCsrProcess(const QByteArray &csrBase64, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestCsrProcess(const QByteArray &csrBase64, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
     QMap<QString,QString> argumentValues;
@@ -47,11 +46,10 @@ void RCloudClient::requestCsrProcess(const QByteArray &csrBase64, const QString 
     processRequest.setName("process-csr");
     processRequest.setArgumentValues(argumentValues);
 
-    this->requestProcess(processRequest,authUser,authToken);
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->requestProcess(processRequest,authUser,authToken));
 }
 
-void RCloudClient::requestReportProcess(const QByteArray &reportBase64, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestReportProcess(const QByteArray &reportBase64, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
     QMap<QString,QString> argumentValues;
@@ -61,207 +59,178 @@ void RCloudClient::requestReportProcess(const QByteArray &reportBase64, const QS
     processRequest.setName("process-report");
     processRequest.setArgumentValues(argumentValues);
 
-    this->requestProcess(processRequest,authUser,authToken);
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->requestProcess(processRequest,authUser,authToken));
 }
 
-void RCloudClient::requestProcess(const RCloudProcessRequest &processRequest, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestProcess(const RCloudProcessRequest &processRequest, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestProcess(this->httpClient,processRequest,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestProcess(this->httpClient,processRequest,authUser,authToken)));
 }
 
-void RCloudClient::requestListFiles(const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestListFiles(const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestListFiles(this->httpClient,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestListFiles(this->httpClient,authUser,authToken)));
 }
 
-void RCloudClient::requestFileUpload(const QString &filePath, const QString &name, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestFileUpload(const QString &filePath, const QString &name, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestFileUpload(this->httpClient,filePath,name,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestFileUpload(this->httpClient,filePath,name,authUser,authToken)));
 }
 
-void RCloudClient::requestFileUpdate(const QString &filePath, const QString &name, const QUuid &id, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestFileUpdate(const QString &filePath, const QString &name, const QUuid &id, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestFileUpdate(this->httpClient,filePath,name,id,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestFileUpdate(this->httpClient,filePath,name,id,authUser,authToken)));
 }
 
-void RCloudClient::requestFileUpdateAccessOwner(const RAccessOwner &accessOwner, const QUuid &id, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestFileUpdateAccessOwner(const RAccessOwner &accessOwner, const QUuid &id, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestFileUpdateAccessOwner(this->httpClient,accessOwner,id,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestFileUpdateAccessOwner(this->httpClient,accessOwner,id,authUser,authToken)));
 }
 
-void RCloudClient::requestFileUpdateAccessMode(const RAccessMode &accessMode, const QUuid &id, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestFileUpdateAccessMode(const RAccessMode &accessMode, const QUuid &id, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestFileUpdateAccessMode(this->httpClient,accessMode,id,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestFileUpdateAccessMode(this->httpClient,accessMode,id,authUser,authToken)));
 }
 
-void RCloudClient::requestFileUpdateVersion(const RVersion &version, const QUuid &id, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestFileUpdateVersion(const RVersion &version, const QUuid &id, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestFileUpdateVersion(this->httpClient,version,id,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestFileUpdateVersion(this->httpClient,version,id,authUser,authToken)));
 }
 
-void RCloudClient::requestFileUpdateTags(const QStringList &tags, const QUuid &id, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestFileUpdateTags(const QStringList &tags, const QUuid &id, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestFileUpdateTags(this->httpClient,tags,id,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestFileUpdateTags(this->httpClient,tags,id,authUser,authToken)));
 }
 
-void RCloudClient::requestFileDownload(const QString &filePath, const QUuid &id, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestFileDownload(const QString &filePath, const QUuid &id, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestFileDownload(this->httpClient,filePath,id,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestFileDownload(this->httpClient,filePath,id,authUser,authToken)));
 }
 
-void RCloudClient::requestFileRemove(const QUuid &fileId, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestFileRemove(const QUuid &fileId, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestFileRemove(this->httpClient,fileId,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestFileRemove(this->httpClient,fileId,authUser,authToken)));
 }
 
-void RCloudClient::requestListUsers(const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestListUsers(const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestListUsers(this->httpClient,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestListUsers(this->httpClient,authUser,authToken)));
 }
 
-void RCloudClient::requestUserAdd(const QString &userName, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestUserAdd(const QString &userName, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestUserAdd(this->httpClient,userName,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestUserAdd(this->httpClient,userName,authUser,authToken)));
 }
 
-void RCloudClient::requestUserUpdate(const QString &userName, const RUserInfo &userInfo, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestUserUpdate(const QString &userName, const RUserInfo &userInfo, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestUserUpdate(this->httpClient,userName,userInfo,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestUserUpdate(this->httpClient,userName,userInfo,authUser,authToken)));
 }
 
-void RCloudClient::requestUserRemove(const QString &userName, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestUserRemove(const QString &userName, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestUserRemove(this->httpClient,userName,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestUserRemove(this->httpClient,userName,authUser,authToken)));
 }
 
-void RCloudClient::requestListUserTokens(const QString &userName, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestListUserTokens(const QString &userName, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestListUserTokens(this->httpClient,userName,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestListUserTokens(this->httpClient,userName,authUser,authToken)));
 }
 
-void RCloudClient::requestUserTokenGenerate(const QString &userName, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestUserTokenGenerate(const QString &userName, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestUserTokenGenerate(this->httpClient,userName,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestUserTokenGenerate(this->httpClient,userName,authUser,authToken)));
 }
 
-void RCloudClient::requestUserTokenRemove(const QUuid &id, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestUserTokenRemove(const QUuid &id, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestUserTokenRemove(this->httpClient,id,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestUserTokenRemove(this->httpClient,id,authUser,authToken)));
 }
 
-void RCloudClient::requestListGroups(const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestListGroups(const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestListGroups(this->httpClient,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestListGroups(this->httpClient,authUser,authToken)));
 }
 
-void RCloudClient::requestGroupAdd(const QString &groupName, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestGroupAdd(const QString &groupName, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestGroupAdd(this->httpClient,groupName,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestGroupAdd(this->httpClient,groupName,authUser,authToken)));
 }
 
-void RCloudClient::requestGroupRemove(const QString &groupName, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestGroupRemove(const QString &groupName, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestGroupRemove(this->httpClient,groupName,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestGroupRemove(this->httpClient,groupName,authUser,authToken)));
 }
 
-void RCloudClient::requestListActions(const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestListActions(const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestListActions(this->httpClient,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestListActions(this->httpClient,authUser,authToken)));
 }
 
-void RCloudClient::requestActionUpdateAccessOwner(const QString &actionName, const RAccessOwner &accessOwner, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestActionUpdateAccessOwner(const QString &actionName, const RAccessOwner &accessOwner, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestActionUpdateAccessOwner(this->httpClient,actionName,accessOwner,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestActionUpdateAccessOwner(this->httpClient,actionName,accessOwner,authUser,authToken)));
 }
 
-void RCloudClient::requestActionUpdateAccessMode(const QString &actionName, const RAccessMode &accessMode, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestActionUpdateAccessMode(const QString &actionName, const RAccessMode &accessMode, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestActionUpdateAccessMode(this->httpClient,actionName,accessMode,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestActionUpdateAccessMode(this->httpClient,actionName,accessMode,authUser,authToken)));
 }
 
-void RCloudClient::requestStatistics(const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestStatistics(const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestStatistics(this->httpClient,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestStatistics(this->httpClient,authUser,authToken)));
 }
 
-void RCloudClient::requestListProcesses(const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestListProcesses(const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestListProcesses(this->httpClient,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestListProcesses(this->httpClient,authUser,authToken)));
 }
 
-void RCloudClient::requestProcessUpdateAccessOwner(const QString &processName, const RAccessOwner &accessOwner, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestProcessUpdateAccessOwner(const QString &processName, const RAccessOwner &accessOwner, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestProcessUpdateAccessOwner(this->httpClient,processName,accessOwner,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestProcessUpdateAccessOwner(this->httpClient,processName,accessOwner,authUser,authToken)));
 }
 
-void RCloudClient::requestProcessUpdateAccessMode(const QString &processName, const RAccessMode &accessMode, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestProcessUpdateAccessMode(const QString &processName, const RAccessMode &accessMode, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestProcessUpdateAccessMode(this->httpClient,processName,accessMode,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestProcessUpdateAccessMode(this->httpClient,processName,accessMode,authUser,authToken)));
 }
 
-void RCloudClient::requestSubmitReport(const RReportRecord &reportRecord, const QString &authUser, const QString &authToken)
+RToolTask *RCloudClient::requestSubmitReport(const RReportRecord &reportRecord, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
-    this->submitAction(RCloudToolAction::requestSubmitReport(this->httpClient,reportRecord,authUser,authToken));
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestSubmitReport(this->httpClient,reportRecord,authUser,authToken)));
 }
 
-void RCloudClient::submitAction(const QSharedPointer<RCloudToolAction> &toolAction)
+RToolTask *RCloudClient::submitAction(const QSharedPointer<RCloudToolAction> &toolAction)
 {
     R_LOG_TRACE_IN;
     RToolInput toolInput;
@@ -277,7 +246,7 @@ void RCloudClient::submitAction(const QSharedPointer<RCloudToolAction> &toolActi
 
     RJobManager::getInstance().submit(toolTask);
     emit this->submitted();
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(toolTask);
 }
 
 void RCloudClient::cancelTask()
