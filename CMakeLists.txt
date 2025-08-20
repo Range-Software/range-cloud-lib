@@ -82,13 +82,12 @@ target_include_directories(range-cloud-lib
 )
 
 target_link_libraries(range-cloud-lib
-    PRIVATE
-        Qt6::Core
+    PUBLIC
+        range-base-lib
         Qt6::Concurrent
         Qt6::HttpServer
         Qt6::Network
         common_defines
-        range-base-lib
 
 )
 
