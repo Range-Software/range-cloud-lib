@@ -36,9 +36,9 @@ void RSoftwareManager::checkForUpdates()
     this->cloudClient->requestListFiles();
 }
 
-void RSoftwareManager::downloadFile(const QString &path, const QUuid &id)
+RToolTask *RSoftwareManager::downloadFile(const QString &path, const QUuid &id)
 {
-    this->cloudClient->requestFileDownload(path,id);
+    return this->cloudClient->requestFileDownload(path,id);
 }
 
 QStringList RSoftwareManager::getExpectedTags()

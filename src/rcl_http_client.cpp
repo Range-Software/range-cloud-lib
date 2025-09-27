@@ -87,17 +87,6 @@ void RHttpClient::sendRequest(const RHttpMessage &httpMessageRequest, RHttpMessa
     R_LOG_TRACE_OUT;
 }
 
-void RHttpClient::abort()
-{
-    R_LOG_TRACE_IN;
-    if (this->networkReply)
-    {
-        R_LOG_TRACE_MESSAGE("Aborting ...\n");
-        QTimer::singleShot(0, this->networkReply, SIGNAL(abort()));
-    }
-    R_LOG_TRACE_OUT;
-}
-
 QSslConfiguration RHttpClient::buildSslConfiguration() const
 {
     R_LOG_TRACE_IN;
@@ -237,6 +226,17 @@ void RHttpClient::setHttpClientSettings(const RHttpClientSettings &httpClientSet
     }
     this->networkManager->setTransferTimeout(this->httpClientSettings.getTimeout());
     RLogger::debug("Transfer timeout: %d [ms]\n",this->networkManager->transferTimeout());
+    R_LOG_TRACE_OUT;
+}
+
+void RHttpClient::abort()
+{
+    R_LOG_TRACE_IN;
+    if (this->networkReply)
+    {
+        R_LOG_TRACE_MESSAGE("Aborting ...\n");
+        QTimer::singleShot(0, this->networkReply, SIGNAL(abort()));
+    }
     R_LOG_TRACE_OUT;
 }
 

@@ -35,7 +35,7 @@ class RSoftwareManager : public QObject
         void checkForUpdates();
 
         //! Download file.
-        void downloadFile(const QString &path, const QUuid &id);
+        RToolTask *downloadFile(const QString &path, const QUuid &id);
 
         //! Get list of expected tags.
         static QStringList getExpectedTags();

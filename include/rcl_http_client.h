@@ -61,9 +61,6 @@ class RHttpClient : public QObject
         //! Send message.
         void sendRequest(const RHttpMessage &httpMessageRequest, RHttpMessage &httpMessageReply);
 
-        //! Abort current request.
-        void abort();
-
     private:
 
         //! Build SSL configuration.
@@ -78,6 +75,9 @@ class RHttpClient : public QObject
     public slots:
 
         void setHttpClientSettings(const RHttpClientSettings &httpClientSettings);
+
+        //! Abort current request.
+        void abort();
 
     protected slots:
 

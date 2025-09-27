@@ -95,6 +95,12 @@ class RCloudToolAction : public RToolAction
         //! Return action type.
         Type getType() const;
 
+        //! Return const pointer to http client.
+        const RHttpClient *getHttpClient() const;
+
+        //! Return pointer to http client.
+        RHttpClient *getHttpClient();
+
         //! Return const rference to request HTTP message.
         const RHttpMessage &getRequestMessage() const;
 

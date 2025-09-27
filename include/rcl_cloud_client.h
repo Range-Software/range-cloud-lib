@@ -16,8 +16,10 @@ class RCloudClient : public QObject
 
     protected:
 
-        //! Cloud http client.
-        RHttpClient *httpClient;
+        //! Client type.
+        RHttpClient::Type type;
+        //! Http client settings.
+        RHttpClientSettings httpClientSettings;
         //! Blocking task.
         bool blocking;
 
@@ -128,9 +130,6 @@ class RCloudClient : public QObject
         RToolTask *submitAction(const QSharedPointer<RCloudToolAction> &toolAction);
 
     public slots:
-
-        //! Cancel running task.
-        void cancelTask();
 
         //! Set new http client settings.
         void setHttpClientSettings(const RHttpClientSettings &httpClientSettings);

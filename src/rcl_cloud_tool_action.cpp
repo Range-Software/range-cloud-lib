@@ -56,6 +56,16 @@ RCloudToolAction &RCloudToolAction::operator =(const RCloudToolAction &toolActio
     R_LOG_TRACE_RETURN(*this);
 }
 
+const RHttpClient *RCloudToolAction::getHttpClient() const
+{
+    return this->httpClient;
+}
+
+RHttpClient *RCloudToolAction::getHttpClient()
+{
+    return this->httpClient;
+}
+
 RCloudToolAction::Type RCloudToolAction::getType() const
 {
     return this->type;
