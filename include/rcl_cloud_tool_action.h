@@ -45,6 +45,7 @@ class RCloudToolAction : public RToolAction
             UserAdd,
             UserUpdate,
             UserRemove,
+            UserSignUp,
             ListUserTokens,
             UserTokenGenerate,
             UserTokenRemove,
@@ -208,6 +209,12 @@ class RCloudToolAction : public RToolAction
 
         //! Process user remove response.
         static QString processUserRemoveResponse(const QByteArray &data);
+
+        //! Set action to sign up suggested user name.
+        static QSharedPointer<RCloudToolAction> requestUserSignUp(RHttpClient *httpClient, const QString &userName, const QString &authUser = QString(), const QString &authToken = QString());
+
+        //! Process user signup.
+        static RUserInfo processUserSignUpResponse(const QByteArray &data);
 
         //! Set action list user authentication tokens.
         static QSharedPointer<RCloudToolAction> requestListUserTokens(RHttpClient *httpClient, const QString &userName, const QString &authUser = QString(), const QString &authToken = QString());

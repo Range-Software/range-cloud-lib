@@ -146,6 +146,11 @@ class RCloudAction
                 static const QString key;
                 static const QString description;
             };
+            struct UserSignUp
+            {
+                static const QString key;
+                static const QString description;
+            };
             struct ListUserTokens
             {
                 static const QString key;

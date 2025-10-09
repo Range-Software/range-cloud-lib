@@ -82,6 +82,9 @@ class RCloudClient : public QObject
         //! Submit user remove request.
         RToolTask *requestUserRemove(const QString &userName, const QString &authUser = QString(), const QString &authToken = QString());
 
+        //! Submit user sign up request.
+        RToolTask *requestUserSignUp(const QString &userName, const QString &authUser = QString(), const QString &authToken = QString());
+
         //! Submit list user authentication tokens request.
         RToolTask *requestListUserTokens(const QString &userName, const QString &authUser = QString(), const QString &authToken = QString());
 
@@ -221,6 +224,9 @@ class RCloudClient : public QObject
 
         //! User was removed.
         void userRemoved(QString userName);
+
+        //! User has signed up.
+        void userSignedUp(RUserInfo userInfo);
 
         //! User token list is available.
         void userTokenListAvailable(QList<RAuthToken> authTokenList);

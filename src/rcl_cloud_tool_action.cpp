@@ -113,6 +113,7 @@ void RCloudToolAction::perform()
         case UserAdd:
         case UserUpdate:
         case UserRemove:
+        case UserSignUp:
         case ListUserTokens:
         case UserTokenGenerate:
         case UserTokenRemove:
@@ -428,6 +429,18 @@ QSharedPointer<RCloudToolAction> RCloudToolAction::requestUserRemove(RHttpClient
 QString RCloudToolAction::processUserRemoveResponse(const QByteArray &data)
 {
     return data;
+}
+
+QSharedPointer<RCloudToolAction> RCloudToolAction::requestUserSignUp(RHttpClient *httpClient, const QString &userName, const QString &authUser, const QString &authToken)
+{
+    RCloudToolAction *toolAction = new RCloudToolAction(UserSignUp,httpClient);
+    toolAction->input.setValue<RCloudAction>(RCloudAction(QUuid::createUuid(),authUser,authToken,RCloudAction::Action::UserSignUp::key,userName,QUuid(),QByteArray()));
+    return QSharedPointer<RCloudToolAction>(toolAction);
+}
+
+RUserInfo RCloudToolAction::processUserSignUpResponse(const QByteArray &data)
+{
+    return RUserInfo::fromJson(QJsonDocument::fromJson(data).object());
 }
 
 QSharedPointer<RCloudToolAction> RCloudToolAction::requestListUserTokens(RHttpClient *httpClient, const QString &userName, const QString &authUser, const QString &authToken)

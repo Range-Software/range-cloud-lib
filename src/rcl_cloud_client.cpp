@@ -144,6 +144,12 @@ RToolTask *RCloudClient::requestUserRemove(const QString &userName, const QStrin
     R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestUserRemove(new RHttpClient(this->type,this->httpClientSettings,this),userName,authUser,authToken)));
 }
 
+RToolTask *RCloudClient::requestUserSignUp(const QString &userName, const QString &authUser, const QString &authToken)
+{
+    R_LOG_TRACE_IN;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestUserSignUp(new RHttpClient(this->type,this->httpClientSettings,this),userName,authUser,authToken)));
+}
+
 RToolTask *RCloudClient::requestListUserTokens(const QString &userName, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;
@@ -350,6 +356,11 @@ void RCloudClient::onActionFinished(const QSharedPointer<RToolAction> &action)
         case RCloudToolAction::UserRemove:
         {
             emit this->userRemoved(RCloudToolAction::processUserRemoveResponse(responseMessage.getBody()));
+            break;
+        }
+        case RCloudToolAction::UserSignUp:
+        {
+            emit this->userSignedUp(RCloudToolAction::processUserSignUpResponse(responseMessage.getBody()));
             break;
         }
         case RCloudToolAction::ListUserTokens:
