@@ -74,8 +74,8 @@ const QString RCloudAction::Action::UserUpdate::description = "Update existing u
 const QString RCloudAction::Action::UserRemove::key = "user-remove";
 const QString RCloudAction::Action::UserRemove::description = "Remove existing user";
 
-const QString RCloudAction::Action::UserSignUp::key = "user-signup";
-const QString RCloudAction::Action::UserSignUp::description = "Sign up with suggested user account";
+const QString RCloudAction::Action::UserRegister::key = "user-register";
+const QString RCloudAction::Action::UserRegister::description = "Register with suggested user account";
 
 const QString RCloudAction::Action::ListUserTokens::key = "list-user-tokens";
 const QString RCloudAction::Action::ListUserTokens::description = "List user authentication tokens";
@@ -247,7 +247,7 @@ QMap<QString, QString> RCloudAction::getActionMap()
     actionMap.insert(Action::UserAdd::key,Action::UserAdd::description);
     actionMap.insert(Action::UserUpdate::key,Action::UserUpdate::description);
     actionMap.insert(Action::UserRemove::key,Action::UserRemove::description);
-    actionMap.insert(Action::UserSignUp::key,Action::UserSignUp::description);
+    actionMap.insert(Action::UserRegister::key,Action::UserRegister::description);
     actionMap.insert(Action::ListUserTokens::key,Action::ListUserTokens::description);
     actionMap.insert(Action::UserTokenGenerate::key,Action::UserTokenGenerate::description);
     actionMap.insert(Action::UserTokenRemove::key,Action::UserTokenRemove::description);

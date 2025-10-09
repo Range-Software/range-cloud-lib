@@ -8,20 +8,14 @@
         <source>New Cloud session</source>
         <translation type="unfinished"></translation>
     </message>
-</context>
-<context>
-    <name>RCloudSessionManager::DefaultCloudSession</name>
-    <message>
-        <location filename="../src/rcl_cloud_session_manager.cpp" line="18"/>
-        <source>Range Cloud</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>RCloudSessionManager::DefaultRangeSession</name>
     <message>
         <location filename="../src/rcl_cloud_session_manager.cpp" line="13"/>
         <source>Range Software</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/rcl_cloud_session_manager.cpp" line="18"/>
+        <source>Range Cloud</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
