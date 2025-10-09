@@ -214,7 +214,7 @@ class RCloudToolAction : public RToolAction
         static QSharedPointer<RCloudToolAction> requestUserRegister(RHttpClient *httpClient, const QString &userName, const QString &authUser = QString(), const QString &authToken = QString());
 
         //! Process user register.
-        static RUserInfo processUserRegisterResponse(const QByteArray &data);
+        static std::tuple<RUserInfo,QList<RAuthToken>> processUserRegisterResponse(const QByteArray &data);
 
         //! Set action list user authentication tokens.
         static QSharedPointer<RCloudToolAction> requestListUserTokens(RHttpClient *httpClient, const QString &userName, const QString &authUser = QString(), const QString &authToken = QString());

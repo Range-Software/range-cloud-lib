@@ -226,7 +226,7 @@ class RCloudClient : public QObject
         void userRemoved(QString userName);
 
         //! User has signed up.
-        void userSignedUp(RUserInfo userInfo);
+        void userRegistered(std::tuple<RUserInfo,QList<RAuthToken>> registrationInfo);
 
         //! User token list is available.
         void userTokenListAvailable(QList<RAuthToken> authTokenList);

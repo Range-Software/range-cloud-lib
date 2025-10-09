@@ -360,7 +360,7 @@ void RCloudClient::onActionFinished(const QSharedPointer<RToolAction> &action)
         }
         case RCloudToolAction::UserRegister:
         {
-            emit this->userSignedUp(RCloudToolAction::processUserRegisterResponse(responseMessage.getBody()));
+            emit this->userRegistered(RCloudToolAction::processUserRegisterResponse(responseMessage.getBody()));
             break;
         }
         case RCloudToolAction::ListUserTokens:

@@ -438,9 +438,33 @@ QSharedPointer<RCloudToolAction> RCloudToolAction::requestUserRegister(RHttpClie
     return QSharedPointer<RCloudToolAction>(toolAction);
 }
 
-RUserInfo RCloudToolAction::processUserRegisterResponse(const QByteArray &data)
+std::tuple<RUserInfo,QList<RAuthToken>> RCloudToolAction::processUserRegisterResponse(const QByteArray &data)
 {
-    return RUserInfo::fromJson(QJsonDocument::fromJson(data).object());
+    QJsonObject json = QJsonDocument::fromJson(data).object();
+
+    RUserInfo userInfo;
+
+    if (const QJsonValue &v = json["user"]; v.isObject())
+    {
+        userInfo = RUserInfo::fromJson(v.toObject());
+    }
+
+    QList<RAuthToken> authTokens;
+
+    if (const QJsonValue &v = json["tokens"]; v.isArray())
+    {
+        const QJsonArray &jsonTokens = v.toArray();
+
+        authTokens.reserve(jsonTokens.size());
+        for (const QJsonValue &jsonToken : jsonTokens)
+        {
+            if (jsonToken.isObject())
+            {
+                authTokens.append(RAuthToken::fromJson(jsonToken.toObject()));
+            }
+        }
+    }
+    return std::tuple<RUserInfo,QList<RAuthToken>>(userInfo,authTokens);
 }
 
 QSharedPointer<RCloudToolAction> RCloudToolAction::requestListUserTokens(RHttpClient *httpClient, const QString &userName, const QString &authUser, const QString &authToken)
