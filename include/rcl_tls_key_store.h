@@ -2,6 +2,7 @@
 #define RCL_TLS_KEY_STORE_H
 
 #include <QString>
+#include <QJsonObject>
 
 class RTlsKeyStore
 {
@@ -48,6 +49,12 @@ class RTlsKeyStore
         const QString &getPassword() const;
 
         void setPassword(const QString &password);
+
+        //! Create key store object from Json.
+        static RTlsKeyStore fromJson(const QJsonObject &json);
+
+        //! Create Json from key store object.
+        QJsonObject toJson() const;
 
 };
 

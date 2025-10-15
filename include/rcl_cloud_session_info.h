@@ -4,6 +4,9 @@
 #include <QString>
 #include <QJsonObject>
 
+#include "rcl_tls_key_store.h"
+#include "rcl_tls_trust_store.h"
+
 class RCloudSessionInfo
 {
 
@@ -28,19 +31,15 @@ class RCloudSessionInfo
             quint16 privatePort;
             //! Connection timeout in milliseconds.
             uint timeout;
-            //! Host or CA certificate.
-            QString certificate;
+            //! Host or CA trust store.
+            RTlsTrustStore trustStore;
         } host;
 
         // Client
         struct Client
         {
-            //! Private key.
-            QString privateKey;
-            //! Private key password.
-            QString privateKeyPassword;
-            //! Client certificate.
-            QString certificate;
+            //! Client keyStore.
+            RTlsKeyStore keyStore;
         } client;
 
     public:
@@ -87,34 +86,22 @@ class RCloudSessionInfo
         //! Set new timeout.
         void setTimeout(uint timeout);
 
-        //! Return const reference to host certificate.
-        const QString &getHostCertificate() const;
+        //! Return const reference to host trust store.
+        const RTlsTrustStore &getHostTrustStore() const;
 
-        //! Set new host certificate.
-        void setHostCertificate(const QString &certificate);
+        //! Set new host trust store.
+        void setHostTrustStore(const RTlsTrustStore &trustStore);
 
-        //! Return const reference to client private key.
-        const QString &getClientPrivateKey() const;
+        //! Return const reference to client key store.
+        const RTlsKeyStore &getClientKeyStore() const;
 
-        //! Set new client private key.
-        void setClientPrivateKey(const QString &privateKey);
+        //! Set new client key store.
+        void setClientKeyStore(const RTlsKeyStore &keyStore);
 
-        //! Return const reference to client private key password.
-        const QString &getClientPrivateKeyPassword() const;
-
-        //! Set new client private key password.
-        void setClientPrivateKeyPassword(const QString &privateKeyPassword);
-
-        //! Return const reference to client private key.
-        const QString &getClientCertificate() const;
-
-        //! Set new client certificate.
-        void setClientCertificate(const QString &certificate);
-
-        //! Create user object from Json.
+        //! Create session info object from Json.
         static RCloudSessionInfo fromJson(const QJsonObject &json);
 
-        //! Create Json from user object.
+        //! Create Json from session info object.
         QJsonObject toJson() const;
 
 };

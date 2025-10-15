@@ -185,3 +185,24 @@ QString RTlsTrustStore::toText(const QSslCertificate &sslCertificate)
     return sslCertificate.toText();
 #endif
 }
+
+RTlsTrustStore RTlsTrustStore::fromJson(const QJsonObject &json)
+{
+    RTlsTrustStore trustStore;
+
+    if (const QJsonValue &v = json["certificateFile"]; v.isString())
+    {
+        trustStore.certificateFile = v.toString();
+    }
+
+    return trustStore;
+}
+
+QJsonObject RTlsTrustStore::toJson() const
+{
+    QJsonObject json;
+
+    json["certificateFile"] = this->certificateFile;
+
+    return json;
+}

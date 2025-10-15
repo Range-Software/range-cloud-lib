@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QSslCertificate>
+#include <QJsonObject>
 
 class RTlsTrustStore
 {
@@ -40,6 +41,12 @@ class RTlsTrustStore
 
         //! Convert SSL Certificate to text.
         static QString toText(const QSslCertificate &sslCertificate);
+
+        //! Create trust store object from Json.
+        static RTlsTrustStore fromJson(const QJsonObject &json);
+
+        //! Create Json from trust store object.
+        QJsonObject toJson() const;
 
 };
 

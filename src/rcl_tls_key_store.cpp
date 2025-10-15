@@ -69,3 +69,34 @@ void RTlsKeyStore::setPassword(const QString &password)
 {
     this->password = password;
 }
+
+RTlsKeyStore RTlsKeyStore::fromJson(const QJsonObject &json)
+{
+    RTlsKeyStore keyStore;
+
+    if (const QJsonValue &v = json["keyFile"]; v.isString())
+    {
+        keyStore.keyFile = v.toString();
+    }
+    if (const QJsonValue &v = json["password"]; v.isString())
+    {
+        keyStore.password = v.toString();
+    }
+    if (const QJsonValue &v = json["certificateFile"]; v.isString())
+    {
+        keyStore.certificateFile = v.toString();
+    }
+
+    return keyStore;
+}
+
+QJsonObject RTlsKeyStore::toJson() const
+{
+    QJsonObject json;
+
+    json["keyFile"] = this->keyFile;
+    json["password"] = this->password;
+    json["certificateFile"] = this->certificateFile;
+
+    return json;
+}

@@ -81,44 +81,24 @@ void RCloudSessionInfo::setTimeout(uint timeout)
     this->host.timeout = timeout;
 }
 
-const QString &RCloudSessionInfo::getHostCertificate() const
+const RTlsTrustStore &RCloudSessionInfo::getHostTrustStore() const
 {
-    return this->host.certificate;
+    return this->host.trustStore;
 }
 
-void RCloudSessionInfo::setHostCertificate(const QString &certificate)
+void RCloudSessionInfo::setHostTrustStore(const RTlsTrustStore &trustStore)
 {
-    this->host.certificate = certificate;
+    this->host.trustStore = trustStore;
 }
 
-const QString &RCloudSessionInfo::getClientPrivateKey() const
+const RTlsKeyStore &RCloudSessionInfo::getClientKeyStore() const
 {
-    return this->client.privateKey;
+    return this->client.keyStore;
 }
 
-void RCloudSessionInfo::setClientPrivateKey(const QString &privateKey)
+void RCloudSessionInfo::setClientKeyStore(const RTlsKeyStore &keyStore)
 {
-    this->client.privateKey = privateKey;
-}
-
-const QString &RCloudSessionInfo::getClientPrivateKeyPassword() const
-{
-    return this->client.privateKeyPassword;
-}
-
-void RCloudSessionInfo::setClientPrivateKeyPassword(const QString &privateKeyPassword)
-{
-    this->client.privateKeyPassword = privateKeyPassword;
-}
-
-const QString &RCloudSessionInfo::getClientCertificate() const
-{
-    return this->client.certificate;
-}
-
-void RCloudSessionInfo::setClientCertificate(const QString &certificate)
-{
-    this->client.certificate = certificate;
+    this->client.keyStore = keyStore;
 }
 
 RCloudSessionInfo RCloudSessionInfo::fromJson(const QJsonObject &json)
@@ -149,26 +129,18 @@ RCloudSessionInfo RCloudSessionInfo::fromJson(const QJsonObject &json)
         {
             session.host.timeout = v.toInt();
         }
-        if (const QJsonValue &v = hostJson["certificate"]; v.isString())
+        if (const QJsonValue &v = hostJson["trustStore"]; v.isObject())
         {
-            session.host.certificate = v.toString();
+            session.host.trustStore = RTlsTrustStore::fromJson(v.toObject());
         }
     }
 
     if (const QJsonValue &v = json["client"]; v.isObject())
     {
         QJsonObject hostJson = v.toObject();
-        if (const QJsonValue &v = hostJson["privateKey"]; v.isString())
+        if (const QJsonValue &v = hostJson["keyStore"]; v.isObject())
         {
-            session.client.privateKey = v.toString();
-        }
-        if (const QJsonValue &v = hostJson["privateKeyPassword"]; v.isString())
-        {
-            session.client.privateKeyPassword = v.toString();
-        }
-        if (const QJsonValue &v = hostJson["certificate"]; v.isString())
-        {
-            session.client.certificate = v.toString();
+            session.client.keyStore = RTlsKeyStore::fromJson(v.toObject());
         }
     }
 
@@ -186,14 +158,12 @@ QJsonObject RCloudSessionInfo::toJson() const
     jsonHost["publicPort"] = this->host.publicPort;
     jsonHost["privatePort"] = this->host.privatePort;
     jsonHost["timeout"] = int(this->host.timeout);
-    jsonHost["certificate"] = this->host.certificate;
+    jsonHost["trustStore"] = this->host.trustStore.toJson();
 
     json["host"] = jsonHost;
 
     QJsonObject jsonClient;
-    jsonClient["privateKey"] = this->client.privateKey;
-    jsonClient["privateKeyPassword"] = this->client.privateKeyPassword;
-    jsonClient["certificate"] = this->client.certificate;
+    jsonClient["keyStore"] = this->client.keyStore.toJson();
 
     json["client"] = jsonClient;
 
