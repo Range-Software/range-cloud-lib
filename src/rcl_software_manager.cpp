@@ -43,7 +43,7 @@ RToolTask *RSoftwareManager::downloadFile(const QString &path, const QUuid &id)
 
 QStringList RSoftwareManager::getExpectedTags()
 {
-    return QStringList() << QSysInfo::productType() << QSysInfo::productVersion() << QSysInfo::currentCpuArchitecture() << RVendor::packageName();
+    return QStringList() << QSysInfo::kernelType() << QSysInfo::currentCpuArchitecture() << RVendor::packageName();
 }
 
 void RSoftwareManager::onFileListAvailable(QList<RFileInfo> fileInfoList)
