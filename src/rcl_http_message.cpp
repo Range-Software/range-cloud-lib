@@ -137,7 +137,8 @@ void RHttpMessage::print(bool printBody) const
 
 QHttpServerRequest::Method RHttpMessage::findMethodForAction(const QString &actionKey)
 {
-    if (actionKey == RCloudAction::Action::FileUpload::key)
+    if (actionKey == RCloudAction::Action::FileUpload::key ||
+        actionKey == RCloudAction::Action::FileReplace::key)
     {
         return QHttpServerRequest::Method::Put;
     }

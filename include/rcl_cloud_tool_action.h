@@ -30,6 +30,7 @@ class RCloudToolAction : public RToolAction
             ListFiles,
             FileInfo,
             FileUpload,
+            FileReplace,
             FileUpdate,
             FileUpdateAccessOwner,
             FileUpdateAccessMode,
@@ -131,6 +132,12 @@ class RCloudToolAction : public RToolAction
 
         //! Process file upload response.
         static RFileInfo processFileUploadResponse(const QByteArray &data);
+
+        //! Set action file replace.
+        static QSharedPointer<RCloudToolAction> requestFileReplace(RHttpClient *httpClient, const QString &filePath, const QString &name, const QString &authUser = QString(), const QString &authToken = QString());
+
+        //! Process file replace response.
+        static RFileInfo processFileReplaceResponse(const QByteArray &data);
 
         //! Set action file update.
         static QSharedPointer<RCloudToolAction> requestFileUpdate(RHttpClient *httpClient, const QString &filePath, const QString &name, const QUuid &id, const QString &authUser = QString(), const QString &authToken = QString());

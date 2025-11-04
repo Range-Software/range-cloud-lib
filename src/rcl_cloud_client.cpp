@@ -295,6 +295,11 @@ void RCloudClient::onActionFinished(const QSharedPointer<RToolAction> &action)
             emit this->fileUploaded(RCloudToolAction::processFileUploadResponse(responseMessage.getBody()));
             break;
         }
+        case RCloudToolAction::FileReplace:
+        {
+            emit this->fileReplaced(RCloudToolAction::processFileReplaceResponse(responseMessage.getBody()));
+            break;
+        }
         case RCloudToolAction::FileUpdate:
         {
             emit this->fileUpdated(RCloudToolAction::processFileUpdateResponse(responseMessage.getBody()));

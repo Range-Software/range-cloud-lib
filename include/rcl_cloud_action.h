@@ -71,6 +71,11 @@ class RCloudAction
                 static const QString key;
                 static const QString description;
             };
+            struct FileReplace
+            {
+                static const QString key;
+                static const QString description;
+            };
             struct FileUpdate
             {
                 static const QString key;

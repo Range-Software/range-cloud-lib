@@ -98,6 +98,7 @@ void RCloudToolAction::perform()
         case ListFiles:
         case FileInfo:
         case FileUpload:
+        case FileReplace:
         case FileUpdate:
         case FileUpdateAccessOwner:
         case FileUpdateAccessMode:
@@ -139,7 +140,7 @@ void RCloudToolAction::perform()
 
                     if (RLogger::getInstance().getLevel() & RLogLevel::Debug)
                     {
-                        this->requestMessage.print(this->type != FileUpload && this->type != FileUpdate);
+                        this->requestMessage.print(this->type != FileUpload && this->type != FileReplace && this->type != FileUpdate);
                     }
 
                     this->httpClient->sendRequest(this->requestMessage,this->responseMessage);
@@ -243,6 +244,28 @@ RFileInfo RCloudToolAction::processFileUploadResponse(const QByteArray &data)
     return RFileInfo::fromJson(QJsonDocument::fromJson(data).object());
 }
 
+QSharedPointer<RCloudToolAction> RCloudToolAction::requestFileReplace(RHttpClient *httpClient, const QString &filePath, const QString &name, const QString &authUser, const QString &authToken)
+{
+    RCloudToolAction *toolAction = new RCloudToolAction(FileReplace,httpClient);
+
+    QByteArray fileContent;
+    if (!RFileTools::readBinaryFile(filePath,fileContent))
+    {
+        throw RError(RError::Type::OpenFile,R_ERROR_REF,
+                     "Failed to read file \"%s\" for upload (replace).",
+                     filePath.toUtf8().constData());
+    }
+
+    toolAction->input.setValue<RCloudAction>(RCloudAction(QUuid::createUuid(),authUser,authToken,RCloudAction::Action::FileReplace::key,name,QUuid(),fileContent));
+
+    return QSharedPointer<RCloudToolAction>(toolAction);
+}
+
+RFileInfo RCloudToolAction::processFileReplaceResponse(const QByteArray &data)
+{
+    return RFileInfo::fromJson(QJsonDocument::fromJson(data).object());
+}
+
 QSharedPointer<RCloudToolAction> RCloudToolAction::requestFileUpdate(RHttpClient *httpClient, const QString &filePath, const QString &name, const QUuid &id, const QString &authUser, const QString &authToken)
 {
     RCloudToolAction *toolAction = new RCloudToolAction(FileUpdate,httpClient);
@@ -251,7 +274,7 @@ QSharedPointer<RCloudToolAction> RCloudToolAction::requestFileUpdate(RHttpClient
     if (!RFileTools::readBinaryFile(filePath,fileContent))
     {
         throw RError(RError::Type::OpenFile,R_ERROR_REF,
-                     "Failed to read file \"%s\" for upload.",
+                     "Failed to read file \"%s\" for upload (update).",
                      filePath.toUtf8().constData());
     }
 

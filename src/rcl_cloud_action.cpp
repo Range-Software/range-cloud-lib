@@ -29,6 +29,9 @@ const QString RCloudAction::Action::FileInfo::description = "Get file informatio
 const QString RCloudAction::Action::FileUpload::key = "file-upload";
 const QString RCloudAction::Action::FileUpload::description = "Upload file to the cloud server";
 
+const QString RCloudAction::Action::FileReplace::key = "file-replace";
+const QString RCloudAction::Action::FileReplace::description = "Replace all files owned by the user and with the same path (resource name) on the cloud server";
+
 const QString RCloudAction::Action::FileUpdate::key = "file-update";
 const QString RCloudAction::Action::FileUpdate::description = "Update file on the cloud server";
 
@@ -232,6 +235,7 @@ QMap<QString, QString> RCloudAction::getActionMap()
     actionMap.insert(Action::ListFiles::key,Action::ListFiles::description);
     actionMap.insert(Action::FileInfo::key,Action::FileInfo::description);
     actionMap.insert(Action::FileUpload::key,Action::FileUpload::description);
+    actionMap.insert(Action::FileReplace::key,Action::FileReplace::description);
     actionMap.insert(Action::FileUpdate::key,Action::FileUpdate::description);
     actionMap.insert(Action::FileUpdateAccessOwner::key,Action::FileUpdateAccessOwner::description);
     actionMap.insert(Action::FileUpdateAccessMode::key,Action::FileUpdateAccessMode::description);

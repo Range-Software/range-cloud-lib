@@ -192,6 +192,9 @@ class RCloudClient : public QObject
         //! File was uploaded.
         void fileUploaded(RFileInfo fileInfo);
 
+        //! File was replaced.
+        void fileReplaced(RFileInfo fileInfo);
+
         //! File was updated.
         void fileUpdated(RFileInfo fileInfo);
 
