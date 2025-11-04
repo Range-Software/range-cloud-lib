@@ -78,6 +78,12 @@ RToolTask *RCloudClient::requestFileUpload(const QString &filePath, const QStrin
     R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestFileUpload(new RHttpClient(this->type,this->httpClientSettings,this),filePath,name,authUser,authToken)));
 }
 
+RToolTask *RCloudClient::requestFileReplace(const QString &filePath, const QString &name, const QString &authUser, const QString &authToken)
+{
+    R_LOG_TRACE_IN;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestFileReplace(new RHttpClient(this->type,this->httpClientSettings,this),filePath,name,authUser,authToken)));
+}
+
 RToolTask *RCloudClient::requestFileUpdate(const QString &filePath, const QString &name, const QUuid &id, const QString &authUser, const QString &authToken)
 {
     R_LOG_TRACE_IN;

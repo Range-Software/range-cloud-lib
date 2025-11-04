@@ -137,7 +137,7 @@ class RCloudToolAction : public RToolAction
         static QSharedPointer<RCloudToolAction> requestFileReplace(RHttpClient *httpClient, const QString &filePath, const QString &name, const QString &authUser = QString(), const QString &authToken = QString());
 
         //! Process file replace response.
-        static RFileInfo processFileReplaceResponse(const QByteArray &data);
+        static std::tuple<RFileInfo,QList<RFileInfo>> processFileReplaceResponse(const QByteArray &data);
 
         //! Set action file update.
         static QSharedPointer<RCloudToolAction> requestFileUpdate(RHttpClient *httpClient, const QString &filePath, const QString &name, const QUuid &id, const QString &authUser = QString(), const QString &authToken = QString());

@@ -49,6 +49,9 @@ class RCloudClient : public QObject
         //! Submit file upload request.
         RToolTask *requestFileUpload(const QString &filePath, const QString &name, const QString &authUser = QString(), const QString &authToken = QString());
 
+        //! Submit file replace request.
+        RToolTask *requestFileReplace(const QString &filePath, const QString &name, const QString &authUser = QString(), const QString &authToken = QString());
+
         //! Submit file update request.
         RToolTask *requestFileUpdate(const QString &filePath, const QString &name, const QUuid &id, const QString &authUser = QString(), const QString &authToken = QString());
 
@@ -193,7 +196,7 @@ class RCloudClient : public QObject
         void fileUploaded(RFileInfo fileInfo);
 
         //! File was replaced.
-        void fileReplaced(RFileInfo fileInfo);
+        void fileReplaced(std::tuple<RFileInfo,QList<RFileInfo>> fileInfoList);
 
         //! File was updated.
         void fileUpdated(RFileInfo fileInfo);

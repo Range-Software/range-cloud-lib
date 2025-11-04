@@ -261,9 +261,29 @@ QSharedPointer<RCloudToolAction> RCloudToolAction::requestFileReplace(RHttpClien
     return QSharedPointer<RCloudToolAction>(toolAction);
 }
 
-RFileInfo RCloudToolAction::processFileReplaceResponse(const QByteArray &data)
+std::tuple<RFileInfo,QList<RFileInfo>> RCloudToolAction::processFileReplaceResponse(const QByteArray &data)
 {
-    return RFileInfo::fromJson(QJsonDocument::fromJson(data).object());
+    QJsonObject jObject = QJsonDocument::fromJson(data).object();
+    RFileInfo uploadFileInfo;
+    QList<RFileInfo> removeFileInfoList;
+
+    if (const QJsonValue &v = jObject["upload"]; v.isObject())
+    {
+        uploadFileInfo = RFileInfo::fromJson(v.toObject());
+    }
+    if (const QJsonValue &v = jObject["remove"]; v.isArray())
+    {
+        QJsonArray jArray = v.toArray();
+        for (const QJsonValue &av : std::as_const(jArray))
+        {
+            if (av.isObject())
+            {
+                removeFileInfoList.append(RFileInfo::fromJson(av.toObject()));
+            }
+        }
+    }
+
+    return std::tuple<RFileInfo,QList<RFileInfo>>(uploadFileInfo,removeFileInfoList);
 }
 
 QSharedPointer<RCloudToolAction> RCloudToolAction::requestFileUpdate(RHttpClient *httpClient, const QString &filePath, const QString &name, const QUuid &id, const QString &authUser, const QString &authToken)
