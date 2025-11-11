@@ -13,6 +13,7 @@ void RHttpProxySettings::_init(const RHttpProxySettings *pHttpProxySettings)
 }
 
 RHttpProxySettings::RHttpProxySettings()
+    : type(Type::SystemProxy)
 {
     this->_init();
 
