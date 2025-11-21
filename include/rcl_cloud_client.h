@@ -135,6 +135,11 @@ class RCloudClient : public QObject
         //! Submit task.
         RToolTask *submitAction(const QSharedPointer<RCloudToolAction> &toolAction);
 
+    public:
+
+        //! Return const reference to http client settings.
+        const RHttpClientSettings &getHttpClientSettings() const;
+
     public slots:
 
         //! Set new http client settings.

@@ -105,3 +105,9 @@ bool RFileTools::writeBinaryFile(const QString &fileName, const QByteArray &byte
     }
     R_LOG_TRACE_RETURN(true);
 }
+
+QFileInfoList RFileTools::listFiles(const QString &directoryPath)
+{
+    R_LOG_TRACE_IN;
+    R_LOG_TRACE_RETURN(QDir(directoryPath).entryInfoList(QDir::Files | QDir::NoDotAndDotDot,QDir::Name));
+}

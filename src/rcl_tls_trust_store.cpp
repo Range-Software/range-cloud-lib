@@ -206,3 +206,23 @@ QJsonObject RTlsTrustStore::toJson() const
 
     return json;
 }
+
+QString RTlsTrustStore::findCN(const QSslCertificate &sslCertificate)
+{
+    QStringList values = sslCertificate.subjectInfo(QSslCertificate::CommonName);
+    if (values.size() == 0)
+    {
+        return QString();
+    }
+    return values.at(0);
+}
+
+QString RTlsTrustStore::findCN(const QString &certificateFile)
+{
+    QList<QSslCertificate> sslCertificates = QSslCertificate::fromPath(certificateFile,QSsl::EncodingFormat::Pem);
+    if (sslCertificates.size() == 0)
+    {
+        return QString();
+    }
+    return RTlsTrustStore::findCN(sslCertificates.at(0));
+}

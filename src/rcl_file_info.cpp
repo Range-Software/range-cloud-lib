@@ -188,6 +188,25 @@ RFileInfo RFileInfo::fromString(const QString &line)
     return info;
 }
 
+RFileInfo RFileInfo::fromQFileInfo(const QFileInfo &qFileInfo, bool useFullPath)
+{
+    RFileInfo rFileInfo;
+
+    rFileInfo.size = qFileInfo.size();
+    rFileInfo.creationDateTime = qFileInfo.fileTime(QFile::FileBirthTime).toSecsSinceEpoch();
+    rFileInfo.updateDateTime = qFileInfo.fileTime(QFile::FileModificationTime).toSecsSinceEpoch();
+    rFileInfo.path = useFullPath ? qFileInfo.filePath() : qFileInfo.fileName();
+    RAccessMode accessMode;
+    accessMode.setUserModeMask(RAccessMode::RW);
+    accessMode.setGroupModeMask(RAccessMode::None);
+    accessMode.setOtherModeMask(RAccessMode::None);
+    rFileInfo.accessRights.setMode(accessMode);
+    rFileInfo.version = RVersion(1,0,0);
+    rFileInfo.md5Checksum = RFileInfo::findMd5Checksum(qFileInfo.absoluteFilePath());
+
+    return rFileInfo;
+}
+
 RFileInfo RFileInfo::fromJson(const QJsonObject &json)
 {
     RFileInfo fileInfo;

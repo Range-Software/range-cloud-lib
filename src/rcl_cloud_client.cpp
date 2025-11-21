@@ -268,6 +268,11 @@ RToolTask *RCloudClient::submitAction(const QSharedPointer<RCloudToolAction> &to
     R_LOG_TRACE_RETURN(toolTask);
 }
 
+const RHttpClientSettings &RCloudClient::getHttpClientSettings() const
+{
+    return this->httpClientSettings;
+}
+
 void RCloudClient::setHttpClientSettings(const RHttpClientSettings &httpClientSettings)
 {
     R_LOG_TRACE_IN;

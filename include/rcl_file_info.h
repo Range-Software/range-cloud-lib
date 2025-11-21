@@ -1,6 +1,7 @@
 #ifndef RCL_FILE_INFO_H
 #define RCL_FILE_INFO_H
 
+#include <QFileInfo>
 #include <QJsonObject>
 #include <QString>
 #include <QUuid>
@@ -122,6 +123,9 @@ class RFileInfo
 
         //! From string.
         static RFileInfo fromString(const QString &line);
+
+        //! Conversion constructor.
+        static RFileInfo fromQFileInfo(const QFileInfo &qFileInfo, bool useFullPath = true);
 
         //! Create file info object from Json.
         static RFileInfo fromJson(const QJsonObject &json);

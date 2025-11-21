@@ -305,7 +305,7 @@ void RHttpServer::buildApiRoutes()
 
     this->pHttpServer->setMissingHandler(this->pHttpServer,[this](const QHttpServerRequest &request, QHttpServerResponder &responder)
     {
-        QString commonName = RHttpServer::findCNCertificateSubject(request.sslConfiguration().peerCertificate());
+        QString commonName = RTlsTrustStore::findCN(request.sslConfiguration().peerCertificate());
         RLogger::info("[%s] Request: user = \"%s\" url = \"%s\"\n",
                       this->getServiceName().toUtf8().constData(),
                       commonName.toUtf8().constData(),
@@ -348,7 +348,7 @@ void RHttpServer::buildApiRoute(const QString &actionKey)
         }
         else if (this->type == RHttpServer::Private)
         {
-            userName = RHttpServer::findCNCertificateSubject(request.sslConfiguration().peerCertificate());
+            userName = RTlsTrustStore::findCN(request.sslConfiguration().peerCertificate());
         }
 
         QString fromAddress = QString("%1:%2").arg(request.remoteAddress().toString(),QString::number(request.remotePort()));
@@ -456,13 +456,7 @@ void RHttpServer::onStartedEncryptionHandshake(QSslSocket *socket)
 {
     if (socket->waitForEncrypted())
     {
-        QString commonName = RHttpServer::findCNCertificateSubject(socket->peerCertificate());
+        QString commonName = RTlsTrustStore::findCN(socket->peerCertificate());
         RLogger::warning("[%s] Incomming connection from \"%s\"\n",this->getServiceName().toUtf8().constData(),commonName.toUtf8().constData());
     }
-}
-
-QString RHttpServer::findCNCertificateSubject(const QSslCertificate &certificate)
-{
-    QStringList values = certificate.subjectInfo(QSslCertificate::CommonName);
-    return values.size() > 0 ? values.at(0) : QString();
 }

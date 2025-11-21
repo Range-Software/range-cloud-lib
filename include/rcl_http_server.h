@@ -122,11 +122,6 @@ class RHttpServer : public QObject
 
         void requestAvailable(const RHttpMessage &httpMessage);
 
-    public:
-
-        //! Find CN in certificate subject.
-        static QString findCNCertificateSubject(const QSslCertificate &certificate);
-
 };
 
 #endif // RCL_HTTP_SERVER_H

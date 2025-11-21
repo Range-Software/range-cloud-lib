@@ -2,6 +2,7 @@
 #define RCL_FILE_TOOLS_H
 
 #include <QByteArray>
+#include <QFileInfoList>
 #include <QString>
 
 namespace RFileTools
@@ -12,6 +13,9 @@ namespace RFileTools
 
     //! Read file.
     bool writeBinaryFile(const QString &fileName, const QByteArray &byteArray);
+
+    //! List files in directory.
+    QFileInfoList listFiles(const QString &directoryPath);
 
 };
 

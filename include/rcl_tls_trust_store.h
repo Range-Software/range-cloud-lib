@@ -48,6 +48,12 @@ class RTlsTrustStore
         //! Create Json from trust store object.
         QJsonObject toJson() const;
 
+        //! Find certificate common name.
+        static QString findCN(const QSslCertificate &sslCertificate);
+
+        //! Find certificate common name.
+        static QString findCN(const QString &certificateFile);
+
 };
 
 #endif // RCL_TLS_TRUST_STORE_H

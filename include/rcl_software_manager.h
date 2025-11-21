@@ -14,7 +14,7 @@ class RSoftwareManager : public QObject
 
         //! Software manager settings.
         RSoftwareManagerSettings softwareManagerSettings;
-        //! Cloud cloudClient.
+        //! Cloud client.
         RCloudClient *cloudClient;
 
     public:
@@ -65,7 +65,7 @@ class RSoftwareManager : public QObject
         //! Software is downloaded.
         void softwareDownloaded(const QString &fileName);
 
-        //! Cloud error has occured.
+        //! Cloud error has occurred.
         void cloudError(RError::Type errorType, const QString &errorMessage, const QString &message);
 
 };
