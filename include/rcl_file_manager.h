@@ -8,6 +8,7 @@
 #include <QMutex>
 
 #include "rcl_cloud_client.h"
+#include "rcl_file_manager_cache.h"
 #include "rcl_file_manager_settings.h"
 
 class RFileManager : public QObject
@@ -19,6 +20,8 @@ class RFileManager : public QObject
 
         //! File manager settings.
         RFileManagerSettings fileManagerSettings;
+        //! File manager cache.
+        RFileManagerCache *fileManagerCache;
         //! Cloud client.
         RCloudClient *cloudClient;
         //! Local file system watcher.
@@ -28,16 +31,25 @@ class RFileManager : public QObject
         //! List of local files.
         QFileInfoList localFiles;
 
+        //! Number of currently running actions.
+        uint nRunningActions;
+
         struct
         {
             QMutex mutex;
-            //! List of files to be uploaded.
-            QList<RFileInfo> upload;
-            //! List of files to be updaed.
-            QList<RFileInfo> update;
-            //! List of files to be downloaded.
-            QList<RFileInfo> download;
+            //! List of local files to be uploaded.
+            QList<RFileInfo> localUpload;
+            //! List of local files to be updaed.
+            QList<RFileInfo> localUpdate;
+            //! List of local files to be removed.
+            QList<RFileInfo> localRemove;
+            //! List of remote files to be downloaded.
+            QList<RFileInfo> remoteDownload;
+            //! List of remote files to be removed.
+            QList<RFileInfo> remoteRemove;
         } filesToSync;
+
+        static const QString logPrefix;
 
     public:
 
@@ -53,16 +65,19 @@ class RFileManager : public QObject
         //! Return pointer to cloud client.
         RCloudClient *getCloudClient();
 
+        //! Return number of currently running actions.
+        uint getNRunningActions() const;
+
         //! Request list of files on cloud.
-        void requestSyncFiles();
+        bool requestSyncFiles();
+
+    private:
+
+        //! Initialize cache file.
+        void initializeCacheFile();
 
         //! Sync files.
         void syncFiles();
-
-    protected:
-
-        //! Download file.
-        RToolTask *downloadFile(const QString &path, const QUuid &id);
 
         //! Compare files in local and remote file lists.
         void compareFileLists();
@@ -74,6 +89,9 @@ class RFileManager : public QObject
 
         //! List with files to sync are avalable.
         void onFilesToSyncAvailable();
+
+        //! File has been removed.
+        void onFileRemoved(RFileInfo fileInfo);
 
         //! File has been downloaded.
         void onFileDownloaded(QString fileName);
@@ -109,6 +127,9 @@ class RFileManager : public QObject
 
         //! File has been uploaded.
         void fileUploaded(const RFileInfo &fileInfo);
+
+        //! Synchronization of files has been completed.
+        void syncFilesCompleted();
 
         //! Cloud error has occurred.
         void cloudError(RError::Type errorType, const QString &errorMessage, const QString &message);

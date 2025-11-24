@@ -6,6 +6,7 @@ void RFileManagerSettings::_init(const RFileManagerSettings *pSettings)
     {
         this->fileTags = pSettings->fileTags;
         this->localDirectory = pSettings->localDirectory;
+        this->cacheFile = pSettings->cacheFile;
     }
 }
 
@@ -48,4 +49,14 @@ const QString &RFileManagerSettings::getLocalDirectory() const
 void RFileManagerSettings::setLocalDirectory(const QString &localDirectory)
 {
     this->localDirectory = localDirectory;
+}
+
+const QString &RFileManagerSettings::getCacheFile() const
+{
+    return this->cacheFile;
+}
+
+void RFileManagerSettings::setCacheFile(const QString &cacheFile)
+{
+    this->cacheFile = cacheFile;
 }

@@ -1,5 +1,6 @@
 # Create a static library
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 qt_add_library(range-cloud-lib
     STATIC
@@ -19,6 +20,8 @@ qt_add_library(range-cloud-lib
         src/rcl_cloud_tool_action.cpp
         src/rcl_file_info.cpp
         src/rcl_file_manager.cpp
+        src/rcl_file_manager_cache.cpp
+        src/rcl_file_manager_settings.cpp
         src/rcl_file_tools.cpp
         src/rcl_group_info.cpp
         src/rcl_http_client.cpp
@@ -53,6 +56,8 @@ qt_add_library(range-cloud-lib
         include/rcl_cloud_tool_action.h
         include/rcl_file_info.h
         include/rcl_file_manager.h
+        include/rcl_file_manager_cache.h
+        include/rcl_file_manager_settings.h
         include/rcl_file_tools.h
         include/rcl_group_info.h
         include/rcl_http_client.h
@@ -69,7 +74,6 @@ qt_add_library(range-cloud-lib
         include/rcl_tls_key_store.h
         include/rcl_tls_trust_store.h
         include/rcl_user_info.h
-        include/rcl_file_manager_settings.h src/rcl_file_manager_settings.cpp
 )
 
 # Compiler definitions
@@ -95,6 +99,7 @@ target_link_libraries(range-cloud-lib
         common_defines
 
 )
+target_link_libraries(range-cloud-lib PRIVATE Qt6::Core)
 target_link_libraries(range-cloud-lib PRIVATE Qt6::Core)
 
 qt_add_translations(range-cloud-lib

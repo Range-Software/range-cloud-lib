@@ -12,6 +12,8 @@ class RFileManagerSettings
         QStringList fileTags;
         //! Local directory.
         QString localDirectory;
+        //! Cache file.
+        QString cacheFile;
 
     private:
 
@@ -43,6 +45,12 @@ class RFileManagerSettings
 
         //! Sets new local directory path.
         void setLocalDirectory(const QString &localDirectory);
+
+        //! Returns const reference to cache file path.
+        const QString & getCacheFile() const;
+
+        //! Sets new path to cache file.
+        void setCacheFile(const QString &cacheFile);
 
 };
 
