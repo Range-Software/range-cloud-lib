@@ -22,6 +22,7 @@ qt_add_library(range-cloud-lib
         src/rcl_file_manager.cpp
         src/rcl_file_manager_cache.cpp
         src/rcl_file_manager_settings.cpp
+        src/rcl_file_quota.cpp
         src/rcl_file_tools.cpp
         src/rcl_group_info.cpp
         src/rcl_http_client.cpp
@@ -58,6 +59,7 @@ qt_add_library(range-cloud-lib
         include/rcl_file_manager.h
         include/rcl_file_manager_cache.h
         include/rcl_file_manager_settings.h
+        include/rcl_file_quota.h
         include/rcl_file_tools.h
         include/rcl_group_info.h
         include/rcl_http_client.h

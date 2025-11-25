@@ -5,6 +5,8 @@
 #include <QList>
 #include <QString>
 
+#include "rcl_file_quota.h"
+
 class RUserInfo
 {
 
@@ -22,6 +24,8 @@ class RUserInfo
         QString name;
         //! Group IDs.
         QList<QString> groupNames;
+        //! File quota.
+        RFileQuota fileQuota;
 
     private:
 
@@ -56,6 +60,12 @@ class RUserInfo
 
         //! Set new list of group IDs.
         void setGroupNames(const QList<QString> &groupNames);
+
+        //! Return const reference to file quota.
+        const RFileQuota &getFileQuota() const;
+
+        //! Set new file quota.
+        void setFileQuota(const RFileQuota &fileQuota);
 
         //! Return true if user was not initialized.
         bool isNull() const;

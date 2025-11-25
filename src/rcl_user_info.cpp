@@ -14,6 +14,7 @@ void RUserInfo::_init(const RUserInfo *pUserInfo)
     {
         this->name = pUserInfo->name;
         this->groupNames = pUserInfo->groupNames;
+        this->fileQuota = pUserInfo->fileQuota;
     }
 }
 
@@ -63,6 +64,16 @@ void RUserInfo::setGroupNames(const QList<QString> &groupNames)
     this->groupNames = groupNames;
 }
 
+const RFileQuota &RUserInfo::getFileQuota() const
+{
+    return this->fileQuota;
+}
+
+void RUserInfo::setFileQuota(const RFileQuota &fileQuota)
+{
+    this->fileQuota = fileQuota;
+}
+
 bool RUserInfo::isNull() const
 {
     return (this->name.isNull() || this->name.isEmpty());
@@ -98,6 +109,15 @@ RUserInfo RUserInfo::fromJson(const QJsonObject &json)
         }
     }
 
+    if (const QJsonValue &v = json["quota"]; v.isObject())
+    {
+        const QJsonObject &jsonQuota = v.toObject();
+        if (const QJsonValue &vQuota = json["quota"]; vQuota.isObject())
+        {
+            userInfo.fileQuota = RFileQuota::fromJson(vQuota.toObject());
+        }
+    }
+
     return userInfo;
 }
 
@@ -113,6 +133,11 @@ QJsonObject RUserInfo::toJson() const
         groupsArray.append(groupName);
     }
     json["groups"] = groupsArray;
+
+    QJsonObject jsonQuota;
+    jsonQuota["files"] = this->fileQuota.toJson();
+
+    json["quotas"] = jsonQuota;
 
     return json;
 }
