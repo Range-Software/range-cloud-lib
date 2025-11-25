@@ -23,6 +23,9 @@ class RCloudClient : public QObject
         //! Blocking task.
         bool blocking;
 
+        //! Logger prefix.
+        static const QString logPrefix;
+
     public:
 
         //! Constructor.

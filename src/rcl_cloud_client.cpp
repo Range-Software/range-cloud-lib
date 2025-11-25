@@ -11,6 +11,8 @@
 #include "rcl_cloud_tool_action.h"
 #include "rcl_http_client.h"
 
+const QString RCloudClient::logPrefix = "CloudClient";
+
 RCloudClient::RCloudClient(RHttpClient::Type type, const RHttpClientSettings &httpClientSettings, QObject *parent)
     : QObject{parent}
     , type{type}
@@ -284,7 +286,7 @@ void RCloudClient::setHttpClientSettings(const RHttpClientSettings &httpClientSe
 void RCloudClient::onActionFinished(const QSharedPointer<RToolAction> &action)
 {
     R_LOG_TRACE_IN;
-    RLogger::debug("Requested cloud action has finished.\n");
+    RLogger::debug("[%s] Requested cloud action has finished.\n",RCloudClient::logPrefix.toUtf8().constData());
     RHttpMessage responseMessage = action.staticCast<RCloudToolAction>().data()->getResponseMessage();
 
     RCloudToolAction::Type actionType = action.staticCast<RCloudToolAction>().data()->getType();
@@ -345,7 +347,9 @@ void RCloudClient::onActionFinished(const QSharedPointer<RToolAction> &action)
             }
             else
             {
-                RLogger::error("Failed to write downloaded file \"%s\".\n", filePath.toUtf8().constData());
+                RLogger::error("[%s] Failed to write downloaded file \"%s\".\n",
+                               RCloudClient::logPrefix.toUtf8().constData(),
+                               filePath.toUtf8().constData());
             }
             break;
         }
@@ -467,8 +471,11 @@ void RCloudClient::onActionFinished(const QSharedPointer<RToolAction> &action)
         }
         default:
         {
-            RLogger::warning("Unhandled action type \'%d\'\n",actionType);
-            RLogger::info("Received response:\n");
+            RLogger::warning("[%s] Unhandled action type \'%d\'\n",
+                             RCloudClient::logPrefix.toUtf8().constData(),
+                             actionType);
+            RLogger::info("[%s] Received response:\n",
+                          RCloudClient::logPrefix.toUtf8().constData());
             RLogger::info("%s\n",responseMessage.getBody().constData());
             break;
         }
@@ -482,7 +489,7 @@ void RCloudClient::onActionFinished(const QSharedPointer<RToolAction> &action)
 void RCloudClient::onActionFailed(const QSharedPointer<RToolAction> &action)
 {
     R_LOG_TRACE_IN;
-    RLogger::error("Requested cloud action has failed.\n");
+    RLogger::error("[%s] Requested cloud action has failed.\n", RCloudClient::logPrefix.toUtf8().constData());
     RHttpMessage responseMessage = action.staticCast<RCloudToolAction>().data()->getResponseMessage();
     emit this->actionFailed(action->getErrorType(), action->getErrorMessage(), responseMessage.getBody());
     R_LOG_TRACE_OUT;
@@ -491,7 +498,7 @@ void RCloudClient::onActionFailed(const QSharedPointer<RToolAction> &action)
 void RCloudClient::onTaskFinished()
 {
     R_LOG_TRACE_IN;
-    RLogger::debug("Requested cloud task has finished.\n");
+    RLogger::debug("[%s] Requested cloud task has finished.\n", RCloudClient::logPrefix.toUtf8().constData());
     emit this->finished();
     R_LOG_TRACE_OUT;
 }
@@ -499,7 +506,7 @@ void RCloudClient::onTaskFinished()
 void RCloudClient::onTaskFailed()
 {
     R_LOG_TRACE_IN;
-    RLogger::error("Requested cloud task has failed.\n");
+    RLogger::error("[%s] Requested cloud task has failed.\n", RCloudClient::logPrefix.toUtf8().constData());
     emit this->failed();
     R_LOG_TRACE_OUT;
 }
