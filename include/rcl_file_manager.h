@@ -26,6 +26,8 @@ class RFileManager : public QObject
         RCloudClient *cloudClient;
         //! Local file system watcher.
         QFileSystemWatcher *localFileSystemWatcher;
+        //! Remote refresh timer.
+        QTimer *remoteRefreshTimer;
         //! List of remote files.
         QList<RFileInfo> remoteFiles;
         //! List of local files.
@@ -33,6 +35,9 @@ class RFileManager : public QObject
 
         //! Number of currently running actions.
         uint nRunningActions;
+
+        //! File manager is running.
+        bool isRunning;
 
         struct
         {
@@ -62,14 +67,14 @@ class RFileManager : public QObject
         //! Set new file manager settings.
         void setFileManagerSettings(const RFileManagerSettings &fileManagerSettings);
 
-        //! Return pointer to cloud client.
-        RCloudClient *getCloudClient();
+        //! Return true if file manager is running.
+        bool isActive() const;
 
-        //! Return number of currently running actions.
-        uint getNRunningActions() const;
+        //! Start file manager.
+        void start(uint remoteRefreshTimeout);
 
-        //! Request list of files on cloud.
-        bool requestSyncFiles();
+        //! Stop file manager.
+        void stop();
 
     private:
 
@@ -81,6 +86,9 @@ class RFileManager : public QObject
 
         //! Compare files in local and remote file lists.
         void compareFileLists();
+
+        //! Return incrementeded version.
+        static RVersion incrementVersion(const RVersion &in);
 
     protected slots:
 
@@ -102,6 +110,9 @@ class RFileManager : public QObject
         //! File has been uploaded.
         void onFileUploaded(RFileInfo fileInfo);
 
+        //! File version has been updated.
+        void onFileVersionUpdated(RFileInfo fileInfo);
+
         //! File tags has been updated.
         void onFileTagsUpdated(RFileInfo fileInfo);
 
@@ -114,10 +125,19 @@ class RFileManager : public QObject
         //! Local directory has changed.
         void onLocalDirectoryChanged(const QString &path);
 
+        //! Refresh timeout.
+        void onRemoteRefreshTimeout();
+
     signals:
 
         //! Lists of files to be synced are available.
         void filesToSyncAvailable();
+
+        //! Local file has been removed.
+        void fileRemoved(const QString &fileName);
+
+        //! Remote file has been removed.
+        void fileRemoved(const RFileInfo &fileInfo);
 
         //! File has been downloaded.
         void fileDownloaded(const QString &fileName);
@@ -127,6 +147,12 @@ class RFileManager : public QObject
 
         //! File has been uploaded.
         void fileUploaded(const RFileInfo &fileInfo);
+
+        //! File vesrion has been updated.
+        void fileVersionUpdated(const RFileInfo &fileInfo);
+
+        //! File tags have been updated.
+        void fileTagsUpdated(const RFileInfo &fileInfo);
 
         //! Synchronization of files has been completed.
         void syncFilesCompleted();
