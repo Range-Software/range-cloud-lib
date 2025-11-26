@@ -109,10 +109,10 @@ RUserInfo RUserInfo::fromJson(const QJsonObject &json)
         }
     }
 
-    if (const QJsonValue &v = json["quota"]; v.isObject())
+    if (const QJsonValue &v = json["quotas"]; v.isObject())
     {
         const QJsonObject &jsonQuota = v.toObject();
-        if (const QJsonValue &vQuota = json["files"]; vQuota.isObject())
+        if (const QJsonValue &vQuota = jsonQuota["files"]; vQuota.isObject())
         {
             userInfo.fileQuota = RFileQuota::fromJson(vQuota.toObject());
         }
