@@ -14,6 +14,8 @@ class RFileManagerCache : public QObject
         qint64 localUpdateDateTime;
         //! Last remote update time when chache was modified.
         qint64 remoteUpdateDateTime;
+        //! Last list file request time.
+        qint64 requestListFilesDateTime;
 
     public:
 
@@ -27,13 +29,28 @@ class RFileManagerCache : public QObject
         void write(const QString &fileName) const;
 
         //! Return last local update time.
-        const qint64 &getLocalUpdateDateTime() const;
+        qint64 getLocalUpdateDateTime() const;
 
         //! Return last remote update time.
-        const qint64 &getRemoteUpdateDateTime() const;
+        qint64 getRemoteUpdateDateTime() const;
+
+        //! Return last request list files time.
+        qint64 getRequestListFilesDateTime() const;
+
+        //! Clear cache.
+        void clear();
 
         //! Set current date time.
         void resetCurrentDateTime();
+
+        //! Set current local update time.
+        void resetLocalUpdateDateTime();
+
+        //! Set current remote update time.
+        void resetRemoteUpdateDateTime();
+
+        //! Set current request list files time.
+        void resetRequestListFilesDateTime();
 
     private:
 

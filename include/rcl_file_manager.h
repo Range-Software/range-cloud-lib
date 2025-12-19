@@ -76,6 +76,9 @@ class RFileManager : public QObject
         //! Stop file manager.
         void stop();
 
+        //! Clear cache.
+        void clearCache();
+
     private:
 
         //! Initialize cache file.
@@ -109,6 +112,9 @@ class RFileManager : public QObject
 
         //! File has been uploaded.
         void onFileUploaded(RFileInfo fileInfo);
+
+        //! File was replaced.
+        void onFileReplaced(std::tuple<RFileInfo,QList<RFileInfo>> fileInfoList);
 
         //! File version has been updated.
         void onFileVersionUpdated(RFileInfo fileInfo);

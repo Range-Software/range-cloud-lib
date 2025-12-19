@@ -39,6 +39,7 @@ RFileManager::RFileManager(const RFileManagerSettings &fileManagerSettings, RClo
     QObject::connect(this->cloudClient,&RCloudClient::fileDownloaded,this,&RFileManager::onFileDownloaded);
     QObject::connect(this->cloudClient,&RCloudClient::fileUpdated,this,&RFileManager::onFileUpdated);
     QObject::connect(this->cloudClient,&RCloudClient::fileUploaded,this,&RFileManager::onFileUploaded);
+    QObject::connect(this->cloudClient,&RCloudClient::fileReplaced,this,&RFileManager::onFileReplaced);
     QObject::connect(this->cloudClient,&RCloudClient::fileVersionUpdated,this,&RFileManager::onFileVersionUpdated);
     QObject::connect(this->cloudClient,&RCloudClient::fileTagsUpdated,this,&RFileManager::onFileTagsUpdated);
     QObject::connect(this->cloudClient,&RCloudClient::actionFinished,this,&RFileManager::onCloudActionFinished);
@@ -99,6 +100,15 @@ void RFileManager::stop()
     this->isRunning = false;
 }
 
+void RFileManager::clearCache()
+{
+    R_LOG_TRACE_IN;
+    this->filesToSync.mutex.lock();
+    this->fileManagerCache->clear();
+    this->filesToSync.mutex.unlock();
+    R_LOG_TRACE_OUT;
+}
+
 void RFileManager::initializeCacheFile()
 {
     R_LOG_TRACE_IN;
@@ -113,6 +123,15 @@ void RFileManager::syncFiles()
 {
     R_LOG_TRACE_IN;
     this->filesToSync.mutex.lock();
+
+    // if (this->nRunningActions > 0)
+    // {
+    //     RLogger::info("[%s] Skipping sync files because there are %u running actions (previous sync is still running).\n",
+    //                   RFileManager::logPrefix.toUtf8().constData(),this->nRunningActions);
+    //     this->filesToSync.mutex.unlock();
+    //     R_LOG_TRACE_OUT;
+    //     return;
+    // }
 
     bool localFileSystemWatcherSignalsBlocked = this->localFileSystemWatcher->signalsBlocked();
     this->localFileSystemWatcher->blockSignals(true);
@@ -181,7 +200,6 @@ void RFileManager::syncFiles()
             this->nRunningActions++;
         }
 
-        this->fileManagerCache->resetCurrentDateTime();
         this->fileManagerCache->write(this->fileManagerSettings.getCacheFile());
     }
     catch (const RError &rError)
@@ -259,7 +277,10 @@ void RFileManager::compareFileLists()
             }
             else
             {
-                this->filesToSync.localRemove.append(localFileInfo);
+                if (localFileInfo.getUpdateDateTime() < this->fileManagerCache->getRequestListFilesDateTime())
+                {
+                    this->filesToSync.localRemove.append(localFileInfo);
+                }
             }
         }
     }
@@ -284,6 +305,45 @@ void RFileManager::compareFileLists()
             }
         }
     }
+
+    RLogger::info("Expected cloud file changes:\n");
+    RLogger::indent();
+    for (const RFileInfo &fileInfo : std::as_const(this->filesToSync.localUpload))
+    {
+        RLogger::info("lu: %s (id: %s, md5-checksum: %s)\n",
+                      fileInfo.getPath().toUtf8().constData(),
+                      fileInfo.getId().toString(QUuid::WithoutBraces).toUtf8().constData(),
+                      fileInfo.getMd5Checksum().constData());
+    }
+    for (const RFileInfo &fileInfo : std::as_const(this->filesToSync.localUpdate))
+    {
+        RLogger::info("lU: %s (id: %s, md5-checksum: %s)\n",
+                      fileInfo.getPath().toUtf8().constData(),
+                      fileInfo.getId().toString(QUuid::WithoutBraces).toUtf8().constData(),
+                      fileInfo.getMd5Checksum().constData());
+    }
+    for (const RFileInfo &fileInfo : std::as_const(this->filesToSync.localRemove))
+    {
+        RLogger::info("lr: %s (id: %s, md5-checksum: %s)\n",
+                      fileInfo.getPath().toUtf8().constData(),
+                      fileInfo.getId().toString(QUuid::WithoutBraces).toUtf8().constData(),
+                      fileInfo.getMd5Checksum().constData());
+    }
+    for (const RFileInfo &fileInfo : std::as_const(this->filesToSync.remoteDownload))
+    {
+        RLogger::info("rd: %s (id: %s, md5-checksum: %s)\n",
+                      fileInfo.getPath().toUtf8().constData(),
+                      fileInfo.getId().toString(QUuid::WithoutBraces).toUtf8().constData(),
+                      fileInfo.getMd5Checksum().constData());
+    }
+    for (const RFileInfo &fileInfo : std::as_const(this->filesToSync.remoteRemove))
+    {
+        RLogger::info("rr: %s (id: %s, md5-checksum: %s)\n",
+                      fileInfo.getPath().toUtf8().constData(),
+                      fileInfo.getId().toString(QUuid::WithoutBraces).toUtf8().constData(),
+                      fileInfo.getMd5Checksum().constData());
+    }
+    RLogger::unindent(false);
 
     this->filesToSync.mutex.unlock();
 
@@ -312,6 +372,7 @@ void RFileManager::onFileListAvailable(QList<RFileInfo> fileInfoList)
         }
     }
     this->compareFileLists();
+    this->fileManagerCache->resetRemoteUpdateDateTime();
     R_LOG_TRACE_OUT;
 }
 
@@ -373,6 +434,23 @@ void RFileManager::onFileUploaded(RFileInfo fileInfo)
     R_LOG_TRACE_OUT;
 }
 
+void RFileManager::onFileReplaced(std::tuple<RFileInfo, QList<RFileInfo> > fileInfoList)
+{
+    R_LOG_TRACE_IN;
+    RLogger::info("[%s] File \"%s\" (%s) has been replaced.\n",
+                  RFileManager::logPrefix.toUtf8().constData(),
+                  std::get<0>(fileInfoList).getPath().toUtf8().constData(),
+                  std::get<0>(fileInfoList).getId().toString(QUuid::WithoutBraces).toUtf8().constData());
+    // Request update version.
+    this->cloudClient->requestFileUpdateVersion(RFileManager::incrementVersion(RVersion()),std::get<0>(fileInfoList).getId());
+    this->nRunningActions++;
+    // Request update tags.
+    this->cloudClient->requestFileUpdateTags(this->fileManagerSettings.getFileTags(),std::get<0>(fileInfoList).getId());
+    this->nRunningActions++;
+    emit this->fileUploaded(std::get<0>(fileInfoList));
+    R_LOG_TRACE_OUT;
+}
+
 void RFileManager::onFileVersionUpdated(RFileInfo fileInfo)
 {
     R_LOG_TRACE_IN;
@@ -426,6 +504,7 @@ void RFileManager::onLocalDirectoryChanged(const QString &path)
         RLogger::info("[%s] One or more files in local directory have changed.\n",
                       RFileManager::logPrefix.toUtf8().constData());
         this->localFiles = RFileTools::listFiles(path);
+        this->fileManagerCache->resetLocalUpdateDateTime();
         this->compareFileLists();
     }
     R_LOG_TRACE_OUT;
@@ -443,6 +522,7 @@ void RFileManager::onRemoteRefreshTimeout()
     {
         try
         {
+            this->fileManagerCache->resetRequestListFilesDateTime();
             this->cloudClient->requestListFiles();
             this->nRunningActions++;
         }

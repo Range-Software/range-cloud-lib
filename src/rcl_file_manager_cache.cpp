@@ -12,6 +12,7 @@ RFileManagerCache::RFileManagerCache(QObject *parent)
     : QObject{parent}
     , localUpdateDateTime{0}
     , remoteUpdateDateTime{0}
+    , requestListFilesDateTime{0}
 {
     R_LOG_TRACE_IN;
     R_LOG_TRACE_OUT;
@@ -70,16 +71,31 @@ void RFileManagerCache::write(const QString &fileName) const
     R_LOG_TRACE_OUT;
 }
 
-const qint64 &RFileManagerCache::getLocalUpdateDateTime() const
+qint64 RFileManagerCache::getLocalUpdateDateTime() const
 {
     R_LOG_TRACE_IN;
     R_LOG_TRACE_RETURN(this->localUpdateDateTime);
 }
 
-const qint64 &RFileManagerCache::getRemoteUpdateDateTime() const
+qint64 RFileManagerCache::getRemoteUpdateDateTime() const
 {
     R_LOG_TRACE_IN;
     R_LOG_TRACE_RETURN(this->remoteUpdateDateTime);
+}
+
+qint64 RFileManagerCache::getRequestListFilesDateTime() const
+{
+    R_LOG_TRACE_IN;
+    R_LOG_TRACE_RETURN(this->requestListFilesDateTime);
+}
+
+void RFileManagerCache::clear()
+{
+    R_LOG_TRACE_IN;
+    this->localUpdateDateTime = 0;
+    this->remoteUpdateDateTime = 0;
+    this->requestListFilesDateTime = 0;
+    R_LOG_TRACE_OUT;
 }
 
 void RFileManagerCache::resetCurrentDateTime()
@@ -88,7 +104,23 @@ void RFileManagerCache::resetCurrentDateTime()
     //! Set last update times to current time.
     this->localUpdateDateTime = QDateTime::currentSecsSinceEpoch();
     this->remoteUpdateDateTime = this->localUpdateDateTime;
+    this->requestListFilesDateTime = this->localUpdateDateTime;
     R_LOG_TRACE_OUT;
+}
+
+void RFileManagerCache::resetLocalUpdateDateTime()
+{
+    this->localUpdateDateTime = QDateTime::currentSecsSinceEpoch();
+}
+
+void RFileManagerCache::resetRemoteUpdateDateTime()
+{
+    this->remoteUpdateDateTime = QDateTime::currentSecsSinceEpoch();
+}
+
+void RFileManagerCache::resetRequestListFilesDateTime()
+{
+    this->requestListFilesDateTime = QDateTime::currentSecsSinceEpoch();
 }
 
 void RFileManagerCache::fromJson(const QJsonObject &json)
@@ -102,6 +134,10 @@ void RFileManagerCache::fromJson(const QJsonObject &json)
     {
         this->remoteUpdateDateTime = QDateTime::fromString(v.toString()).toSecsSinceEpoch();
     }
+    if (const QJsonValue &v = json["listRequested"]; v.isString())
+    {
+        this->requestListFilesDateTime = QDateTime::fromString(v.toString()).toSecsSinceEpoch();
+    }
     R_LOG_TRACE_OUT;
 }
 
@@ -112,6 +148,8 @@ QJsonObject RFileManagerCache::toJson() const
 
     json["localUpdated"] = QDateTime::fromSecsSinceEpoch(this->localUpdateDateTime).toString();
     json["remoteUpdated"] = QDateTime::fromSecsSinceEpoch(this->remoteUpdateDateTime).toString();
+    json["listRequested"] = QDateTime::fromSecsSinceEpoch(this->requestListFilesDateTime).toString();
+
 
     R_LOG_TRACE_RETURN(json);
 }
