@@ -6,6 +6,7 @@
 #include <QFileSystemWatcher>
 #include <QTimer>
 #include <QMutex>
+#include <QSet>
 
 #include "rcl_cloud_client.h"
 #include "rcl_file_manager_cache.h"
@@ -52,6 +53,8 @@ class RFileManager : public QObject
             QList<RFileInfo> remoteDownload;
             //! List of remote files to be removed.
             QList<RFileInfo> remoteRemove;
+            //! Set of file paths currently pending upload (to prevent duplicates).
+            QSet<QString> pendingUploadPaths;
         } filesToSync;
 
         static const QString logPrefix;

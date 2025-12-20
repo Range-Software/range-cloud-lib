@@ -196,6 +196,7 @@ void RFileManager::syncFiles()
             RLogger::info("[%s] File upload: \"%s\"\n",
                           RFileManager::logPrefix.toUtf8().constData(),
                           fileInfo.getPath().toUtf8().constData());
+            this->filesToSync.pendingUploadPaths.insert(fileInfo.getPath());
             this->cloudClient->requestFileUpload(filePath,fileInfo.getPath());
             this->nRunningActions++;
         }
@@ -273,7 +274,16 @@ void RFileManager::compareFileLists()
 
             if (localFileInfo.getUpdateDateTime() > this->fileManagerCache->getRemoteUpdateDateTime())
             {
-                this->filesToSync.localUpload.append(localFileInfo);
+                if (!this->filesToSync.pendingUploadPaths.contains(fileInfo.fileName()))
+                {
+                    this->filesToSync.localUpload.append(localFileInfo);
+                }
+                else
+                {
+                    RLogger::info("[%s] Skipping file \"%s\" - upload already pending.\n",
+                                  RFileManager::logPrefix.toUtf8().constData(),
+                                  fileInfo.fileName().toUtf8().constData());
+                }
             }
             else
             {
@@ -424,6 +434,7 @@ void RFileManager::onFileUploaded(RFileInfo fileInfo)
                   RFileManager::logPrefix.toUtf8().constData(),
                   fileInfo.getPath().toUtf8().constData(),
                   fileInfo.getId().toString(QUuid::WithoutBraces).toUtf8().constData());
+    this->filesToSync.pendingUploadPaths.remove(fileInfo.getPath());
     // Request update version.
     this->cloudClient->requestFileUpdateVersion(RFileManager::incrementVersion(RVersion()),fileInfo.getId());
     this->nRunningActions++;
@@ -441,6 +452,7 @@ void RFileManager::onFileReplaced(std::tuple<RFileInfo, QList<RFileInfo> > fileI
                   RFileManager::logPrefix.toUtf8().constData(),
                   std::get<0>(fileInfoList).getPath().toUtf8().constData(),
                   std::get<0>(fileInfoList).getId().toString(QUuid::WithoutBraces).toUtf8().constData());
+    this->filesToSync.pendingUploadPaths.remove(std::get<0>(fileInfoList).getPath());
     // Request update version.
     this->cloudClient->requestFileUpdateVersion(RFileManager::incrementVersion(RVersion()),std::get<0>(fileInfoList).getId());
     this->nRunningActions++;
@@ -479,6 +491,7 @@ void RFileManager::onCloudActionFinished()
     this->nRunningActions--;
     if (this->nRunningActions == 0)
     {
+        this->filesToSync.pendingUploadPaths.clear();
         emit this->syncFilesCompleted();
     }
     R_LOG_TRACE_OUT;
@@ -491,6 +504,7 @@ void RFileManager::onCloudActionFailed(RError::Type errorType, const QString &er
     emit this->cloudError(errorType,errorMessage,message);
     if (this->nRunningActions == 0)
     {
+        this->filesToSync.pendingUploadPaths.clear();
         emit this->syncFilesCompleted();
     }
     R_LOG_TRACE_OUT;
