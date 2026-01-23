@@ -64,7 +64,7 @@ void RFileManager::setFileManagerSettings(const RFileManagerSettings &fileManage
     if (oldLocalDirectory != this->fileManagerSettings.getLocalDirectory())
     {
         this->localFileSystemWatcher->removePath(oldLocalDirectory);
-        if (this->localFileSystemWatcher->addPath(this->fileManagerSettings.getLocalDirectory()))
+        if (!this->localFileSystemWatcher->addPath(this->fileManagerSettings.getLocalDirectory()))
         {
             RLogger::warning("[%s] Could not add path \'%s\' to local file system watcher\n",
                              RFileManager::logPrefix.toUtf8().constData(),
@@ -297,11 +297,15 @@ void RFileManager::compareFileLists()
 
     for (const RFileInfo &remoteFileInfo : std::as_const(this->remoteFiles))
     {
+        if (remoteFileInfo.getAccessRights().getOwner().getUser() != userName)
+        {
+            continue;
+        }
+
         bool localFileFound = false;
         for (const QFileInfo &fileInfo : std::as_const(this->localFiles))
         {
-            if (fileInfo.fileName() == remoteFileInfo.getPath() &&
-                remoteFileInfo.getAccessRights().getOwner().getUser() == userName)
+            if (fileInfo.fileName() == remoteFileInfo.getPath())
             {
                 localFileFound = true;
                 break;
@@ -312,6 +316,10 @@ void RFileManager::compareFileLists()
             if (this->fileManagerCache->getLocalUpdateDateTime() > remoteFileInfo.getUpdateDateTime())
             {
                 this->filesToSync.remoteRemove.append(remoteFileInfo);
+            }
+            else
+            {
+                this->filesToSync.remoteDownload.append(remoteFileInfo);
             }
         }
     }
@@ -364,7 +372,7 @@ void RFileManager::compareFileLists()
 RVersion RFileManager::incrementVersion(const RVersion &in)
 {
     R_LOG_TRACE_IN;
-    RVersion out(in.getMajor(),in.getMinor(),in.getRelease());
+    RVersion out(in.getMajor(),in.getMinor(),in.getRelease() + 1);
     R_LOG_TRACE_RETURN(out);
 }
 
@@ -434,7 +442,9 @@ void RFileManager::onFileUploaded(RFileInfo fileInfo)
                   RFileManager::logPrefix.toUtf8().constData(),
                   fileInfo.getPath().toUtf8().constData(),
                   fileInfo.getId().toString(QUuid::WithoutBraces).toUtf8().constData());
+    this->filesToSync.mutex.lock();
     this->filesToSync.pendingUploadPaths.remove(fileInfo.getPath());
+    this->filesToSync.mutex.unlock();
     // Request update version.
     this->cloudClient->requestFileUpdateVersion(RFileManager::incrementVersion(RVersion()),fileInfo.getId());
     this->nRunningActions++;
@@ -452,7 +462,9 @@ void RFileManager::onFileReplaced(std::tuple<RFileInfo, QList<RFileInfo> > fileI
                   RFileManager::logPrefix.toUtf8().constData(),
                   std::get<0>(fileInfoList).getPath().toUtf8().constData(),
                   std::get<0>(fileInfoList).getId().toString(QUuid::WithoutBraces).toUtf8().constData());
+    this->filesToSync.mutex.lock();
     this->filesToSync.pendingUploadPaths.remove(std::get<0>(fileInfoList).getPath());
+    this->filesToSync.mutex.unlock();
     // Request update version.
     this->cloudClient->requestFileUpdateVersion(RFileManager::incrementVersion(RVersion()),std::get<0>(fileInfoList).getId());
     this->nRunningActions++;
@@ -488,10 +500,15 @@ void RFileManager::onFileTagsUpdated(RFileInfo fileInfo)
 void RFileManager::onCloudActionFinished()
 {
     R_LOG_TRACE_IN;
-    this->nRunningActions--;
+    if (this->nRunningActions > 0)
+    {
+        this->nRunningActions--;
+    }
     if (this->nRunningActions == 0)
     {
+        this->filesToSync.mutex.lock();
         this->filesToSync.pendingUploadPaths.clear();
+        this->filesToSync.mutex.unlock();
         emit this->syncFilesCompleted();
     }
     R_LOG_TRACE_OUT;
@@ -500,11 +517,16 @@ void RFileManager::onCloudActionFinished()
 void RFileManager::onCloudActionFailed(RError::Type errorType, const QString &errorMessage, const QString &message)
 {
     R_LOG_TRACE_IN;
-    this->nRunningActions--;
+    if (this->nRunningActions > 0)
+    {
+        this->nRunningActions--;
+    }
     emit this->cloudError(errorType,errorMessage,message);
     if (this->nRunningActions == 0)
     {
+        this->filesToSync.mutex.lock();
         this->filesToSync.pendingUploadPaths.clear();
+        this->filesToSync.mutex.unlock();
         emit this->syncFilesCompleted();
     }
     R_LOG_TRACE_OUT;
