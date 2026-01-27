@@ -190,6 +190,10 @@ QHttpServerResponse::StatusCode RHttpMessage::errorTypeToStatusCode(RError::Type
             return QHttpServerResponse::StatusCode::BadRequest;
         case RError::Unauthorized:
             return QHttpServerResponse::StatusCode::Unauthorized;
+        case RError::NotFound:
+            return QHttpServerResponse::StatusCode::NotFound;
+        case RError::Timeout:
+            return QHttpServerResponse::StatusCode::GatewayTimeout;
         case RError::OpenFile:
         case RError::ReadFile:
         case RError::WriteFile:
@@ -201,6 +205,7 @@ QHttpServerResponse::StatusCode RHttpMessage::errorTypeToStatusCode(RError::Type
         case RError::ReadDir:
         case RError::Application:
         case RError::ChildProcess:
+        case RError::Connection:
         case RError::Unknown:
         default:
             return QHttpServerResponse::StatusCode::InternalServerError;
@@ -217,6 +222,10 @@ RError::Type RHttpMessage::statusCodeToErrorType(QHttpServerResponse::StatusCode
             return RError::InvalidInput;
         case QHttpServerResponse::StatusCode::Unauthorized:
             return RError::Unauthorized;
+        case QHttpServerResponse::StatusCode::NotFound:
+            return RError::NotFound;
+        case QHttpServerResponse::StatusCode::GatewayTimeout:
+            return RError::Timeout;
         default:
             return RError::Unknown;
     }

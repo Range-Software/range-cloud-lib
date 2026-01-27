@@ -9,6 +9,9 @@
 #include <QUuid>
 #include <QSslSocket>
 #include <QSslServer>
+#include <QTimer>
+#include <QDateTime>
+#include <memory>
 
 #include "rcl_auth_token_validator.h"
 #include "rcl_http_message.h"
@@ -27,7 +30,7 @@ class RHttpServer : public QObject
         enum Type
         {
             Public  = 0,
-            Private = 1 << 0,
+            Private = 1
         };
 
     private:
@@ -45,6 +48,10 @@ class RHttpServer : public QObject
         QHttpServer *pHttpServer;
         //! Map of server handlers.
         QMap<QUuid,RHttpServerHandler*> serverHandlers;
+        //! Map of handler creation times.
+        QMap<QUuid,QDateTime> handlerCreationTimes;
+        //! Timer for handler cleanup.
+        QTimer *pCleanupTimer;
         //! Authentication token validator.
         RAuthTokenValidator *pAuthTokenValidator;
 
@@ -103,6 +110,8 @@ class RHttpServer : public QObject
         void serverHandlerAdd(RHttpServerHandler *serverHandler);
 
         void serverHandlerRemove(const QUuid &serverHandlerId);
+
+        void cleanupStaleHandlers();
 
         void onStartedEncryptionHandshake(QSslSocket *socket);
 

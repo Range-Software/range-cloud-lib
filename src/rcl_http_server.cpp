@@ -9,6 +9,10 @@
 #include <QSslServer>
 #include <QLoggingCategory>
 #include <QtConcurrentRun>
+#include <QMutexLocker>
+#include <QWaitCondition>
+#include <QDateTime>
+#include <memory>
 
 #include "rcl_cloud_action.h"
 #include "rcl_http_server.h"
@@ -24,8 +28,12 @@ class RHttpServerHandler
         QUuid id;
         //! Service name.
         QString serviceName;
-        //! Mutex to lock response.
+        //! Mutex to protect response data.
         QMutex syncMutex;
+        //! Condition variable for response availability.
+        QWaitCondition responseCondition;
+        //! Response ready flag.
+        bool responseReady;
         //! Response message.
         RHttpMessage responseMessage;
 
@@ -34,9 +42,9 @@ class RHttpServerHandler
         RHttpServerHandler()
             : id(QUuid::createUuid())
             , serviceName("HttpServerHandler_" + id.toString(QUuid::WithoutBraces))
+            , responseReady(false)
         {
             R_LOG_TRACE_IN;
-            this->syncMutex.lock();
             R_LOG_TRACE_OUT;
         }
 
@@ -48,29 +56,34 @@ class RHttpServerHandler
         void sendReply(const RHttpMessage &httpMessage)
         {
             R_LOG_TRACE_IN;
+            QMutexLocker locker(&this->syncMutex);
             this->responseMessage = httpMessage;
-            this->syncMutex.unlock();
+            this->responseReady = true;
+            this->responseCondition.wakeOne();
             R_LOG_TRACE_OUT;
         }
 
         bool fetchResponseMessage(int timeout, RHttpMessage &responseMessage)
         {
             R_LOG_TRACE_IN;
-            RLogger::debug("[%s] Trylock sync mutex\n",this->serviceName.toUtf8().constData());
-            bool lockResult = this->syncMutex.tryLock(timeout);
-            if (lockResult)
+            QMutexLocker locker(&this->syncMutex);
+            RLogger::debug("[%s] Waiting for response (timeout: %d ms)\n",
+                          this->serviceName.toUtf8().constData(), timeout);
+
+            bool success = this->responseCondition.wait(&this->syncMutex, timeout);
+
+            if (success && this->responseReady)
             {
                 responseMessage = this->responseMessage;
-                RLogger::debug("[%s] Unlock sync mutex\n",this->serviceName.toUtf8().constData());
-                this->syncMutex.unlock();
-                RLogger::debug("[%s] Sync mutex unlocked\n",this->serviceName.toUtf8().constData());
+                RLogger::debug("[%s] Response received\n",this->serviceName.toUtf8().constData());
             }
             else
             {
-                RLogger::warning("[%s] Failed to lock sync mutex\n",this->serviceName.toUtf8().constData());
+                RLogger::warning("[%s] Response timeout after %d ms\n",
+                               this->serviceName.toUtf8().constData(), timeout);
             }
             R_LOG_TRACE_OUT;
-            return lockResult;
+            return success && this->responseReady;
         }
 
 };
@@ -81,21 +94,43 @@ RHttpServer::RHttpServer(Type type, const RHttpServerSettings &httpServerSetting
     , httpServerSettings{httpServerSettings}
     , pSslServer{nullptr}
     , pHttpServer{nullptr}
+    , pCleanupTimer{nullptr}
     , pAuthTokenValidator{nullptr}
 {
     R_LOG_TRACE_IN;
 
+    // Validate settings
+    QString validationError;
+    if (!this->httpServerSettings.validate(&validationError))
+    {
+        R_LOG_TRACE_OUT;
+        throw RError(RError::Application, R_ERROR_REF,
+                     "Invalid HTTP server settings: %s",
+                     validationError.toUtf8().constData());
+    }
+
     this->pSslServer = new QSslServer(this);
     this->pHttpServer = new QHttpServer(this);
+
 #if QT_VERSION > QT_VERSION_CHECK(6, 9, 0)
     QHttpServerConfiguration httpServerConfiguration = this->pHttpServer->configuration();
     httpServerConfiguration.setRateLimitPerSecond(this->httpServerSettings.getRateLimitPerSecond());
     this->pHttpServer->setConfiguration(httpServerConfiguration);
+#else
+    RLogger::warning("[%s] Rate limiting is not available in Qt %s (requires Qt 6.10+). "
+                    "Server will accept unlimited requests per second.\n",
+                    this->getServiceName().toUtf8().constData(),
+                    qVersion());
 #endif
 
     this->buildApiRoutes();
 
     this->pSslServer->setSslConfiguration(this->buildSslConfiguration());
+
+    // Setup cleanup timer
+    this->pCleanupTimer = new QTimer(this);
+    this->pCleanupTimer->setInterval(this->httpServerSettings.getHandlerCleanupIntervalMs());
+    QObject::connect(this->pCleanupTimer, &QTimer::timeout, this, &RHttpServer::cleanupStaleHandlers);
 
     QLoggingCategory::setFilterRules("qt.httpserver=true\n"
                                      "appname.access=true");
@@ -122,6 +157,13 @@ void RHttpServer::start()
         }
         RLogger::info("[%s] HTTP Server is listening on a port \"%u\".\n",this->getServiceName().toUtf8().constData(),this->pSslServer->serverPort());
 
+        // Start cleanup timer
+        this->pCleanupTimer->start();
+        RLogger::info("[%s] Handler cleanup timer started (interval: %u ms, max age: %u ms)\n",
+                     this->getServiceName().toUtf8().constData(),
+                     this->httpServerSettings.getHandlerCleanupIntervalMs(),
+                     this->httpServerSettings.getMaxStaleHandlerAgeMs());
+
         emit this->started();
         emit this->ready();
     }
@@ -143,6 +185,12 @@ void RHttpServer::stop()
 {
     RLogger::info("[%s] Signal service to stop.\n",this->getServiceName().toUtf8().constData());
 
+    // Stop cleanup timer
+    if (this->pCleanupTimer)
+    {
+        this->pCleanupTimer->stop();
+    }
+
     foreach (QTcpServer *tcpServer, this->pHttpServer->servers())
     {
         tcpServer->close();
@@ -155,28 +203,25 @@ void RHttpServer::stop()
 void RHttpServer::sendMessageReply(const RHttpMessage &httpMessage)
 {
     R_LOG_TRACE_IN;
-    this->syncMutex.lock();
+    QMutexLocker locker(&this->syncMutex);
     QMap<QUuid,RHttpServerHandler*>::iterator iter = this->serverHandlers.find(httpMessage.getHandlerId());
     if (iter == this->serverHandlers.end())
     {
         RLogger::warning("[%s] HTTP message cannot be sent. Handler (id: \"%s\") does not exist.\n",
                          this->getServiceName().toUtf8().constData(),
                          httpMessage.getHandlerId().toString(QUuid::WithoutBraces).toUtf8().constData());
-        this->syncMutex.unlock();
         R_LOG_TRACE_OUT;
         return;
     }
     iter.value()->sendReply(httpMessage);
-    this->syncMutex.unlock();
     R_LOG_TRACE_OUT;
 }
 
 bool RHttpServer::containsServerHandlerId(const QUuid &serverHandlerId)
 {
     R_LOG_TRACE_IN;
-    this->syncMutex.lock();
+    QMutexLocker locker(&this->syncMutex);
     bool contains = this->serverHandlers.contains(serverHandlerId);
-    this->syncMutex.unlock();
     R_LOG_TRACE_RETURN(contains);
 }
 
@@ -246,6 +291,28 @@ QSslKey RHttpServer::loadPrivateKey() const
     QSsl::EncodingFormat encoding = QSsl::Pem;
     const QByteArray &passPhrase = this->httpServerSettings.getTlsKeyStore().getPassword().toUtf8();
 
+    // Read key file once
+    QFile privateKeyFile(keyFile);
+    if (!privateKeyFile.open(QIODevice::ReadOnly))
+    {
+        R_LOG_TRACE_OUT;
+        throw RError(RError::Application,R_ERROR_REF,
+                     "Couldn't open SSL key file \"%s\" for reading.",
+                     keyFile.toUtf8().constData());
+    }
+
+    QByteArray keyData = privateKeyFile.readAll();
+    privateKeyFile.close();
+
+    if (keyData.isEmpty())
+    {
+        R_LOG_TRACE_OUT;
+        throw RError(RError::Application,R_ERROR_REF,
+                     "SSL key file \"%s\" is empty.",
+                     keyFile.toUtf8().constData());
+    }
+
+    // Try different algorithms with the same data
     QList<QSsl::KeyAlgorithm> algorithms;
     algorithms.append(QSsl::Rsa);
     algorithms.append(QSsl::Dsa);
@@ -255,28 +322,24 @@ QSslKey RHttpServer::loadPrivateKey() const
 
     for (QSsl::KeyAlgorithm algorithm : algorithms)
     {
-        QFile privateKeyFile(keyFile);
-        if (!privateKeyFile.open(QIODevice::ReadOnly))
-        {
-            R_LOG_TRACE_OUT;
-            throw RError(RError::Application,R_ERROR_REF,
-                         "Couldn't open SSL key file \"%s\" for reading.",
-                         keyFile.toUtf8().constData());
-        }
-
         RLogger::debug("[%s] Trying SSL algorithm: %s\n",
                        this->getServiceName().toUtf8().constData(),
                        RHttpServer::getKeyAlgorithmName(algorithm).toUtf8().constData());
-        QSslKey sslKey(&privateKeyFile,algorithm,encoding,QSsl::PrivateKey,passPhrase);
-        privateKeyFile.close();
+
+        QSslKey sslKey(keyData, algorithm, encoding, QSsl::PrivateKey, passPhrase);
+
         if (!sslKey.isNull())
         {
-            RLogger::debug("[%s] Private key SSL algorithm: %s\n",
-                           this->getServiceName().toUtf8().constData(),
-                           RHttpServer::getKeyAlgorithmName(algorithm).toUtf8().constData());
+            RLogger::info("[%s] Private key loaded successfully using algorithm: %s\n",
+                          this->getServiceName().toUtf8().constData(),
+                          RHttpServer::getKeyAlgorithmName(algorithm).toUtf8().constData());
             return sslKey;
         }
     }
+
+    RLogger::error("[%s] Failed to load private key from \"%s\" with any supported algorithm\n",
+                   this->getServiceName().toUtf8().constData(),
+                   keyFile.toUtf8().constData());
     return QSslKey();
 }
 
@@ -395,18 +458,30 @@ QHttpServerResponse RHttpServer::processRequest(
     message.setBody(data);
     message.setFrom(fromAddress);
 
-    RHttpServerHandler *serverHandler = new RHttpServerHandler;
-    this->serverHandlerAdd(serverHandler);
+    std::unique_ptr<RHttpServerHandler> serverHandler(new RHttpServerHandler);
+    this->serverHandlerAdd(serverHandler.get());
     message.setHandlerId(serverHandler->getId());
-    RLogger::debug("[%s] Received message with paylod size = \"%ld\"\n",this->getServiceName().toUtf8().constData(),message.getBody().size());
+    RLogger::debug("[%s] Received message with payload size = \"%ld\"\n",this->getServiceName().toUtf8().constData(),message.getBody().size());
 
     emit this->requestAvailable(message);
 
     RHttpMessage responseMessage;
-    serverHandler->fetchResponseMessage(10000,responseMessage);
+    const quint32 timeout = this->httpServerSettings.getResponseTimeoutMs();
+    bool success = serverHandler->fetchResponseMessage(timeout, responseMessage);
+
+    if (!success)
+    {
+        RLogger::error("[%s] Request timeout after %u ms for action '%s' from %s\n",
+                      this->getServiceName().toUtf8().constData(),
+                      timeout,
+                      action.toUtf8().constData(),
+                      fromAddress.toUtf8().constData());
+
+        responseMessage.setErrorType(RError::Timeout);
+        responseMessage.setBody(QString("Request timeout after %1 ms").arg(timeout).toUtf8());
+    }
 
     this->serverHandlerRemove(serverHandler->getId());
-    delete serverHandler;
 
     RLogger::debug("[%s] Create server response\n",this->getServiceName().toUtf8().constData());
     QHttpServerResponse response(responseMessage.getBody(),RHttpMessage::errorTypeToStatusCode(responseMessage.getErrorType()));
@@ -437,18 +512,88 @@ QString RHttpServer::getServiceName() const
 void RHttpServer::serverHandlerAdd(RHttpServerHandler *serverHandler)
 {
     R_LOG_TRACE_IN;
-    this->syncMutex.lock();
+    QMutexLocker locker(&this->syncMutex);
     this->serverHandlers.insert(serverHandler->getId(),serverHandler);
-    this->syncMutex.unlock();
+    this->handlerCreationTimes.insert(serverHandler->getId(), QDateTime::currentDateTime());
+    RLogger::debug("[%s] Added handler %s (total handlers: %d)\n",
+                  this->getServiceName().toUtf8().constData(),
+                  serverHandler->getId().toString(QUuid::WithoutBraces).toUtf8().constData(),
+                  this->serverHandlers.size());
     R_LOG_TRACE_OUT;
 }
 
 void RHttpServer::serverHandlerRemove(const QUuid &serverHandlerId)
 {
     R_LOG_TRACE_IN;
-    this->syncMutex.lock();
+    QMutexLocker locker(&this->syncMutex);
     this->serverHandlers.remove(serverHandlerId);
-    this->syncMutex.unlock();
+    this->handlerCreationTimes.remove(serverHandlerId);
+    RLogger::debug("[%s] Removed handler %s (remaining handlers: %d)\n",
+                  this->getServiceName().toUtf8().constData(),
+                  serverHandlerId.toString(QUuid::WithoutBraces).toUtf8().constData(),
+                  this->serverHandlers.size());
+    R_LOG_TRACE_OUT;
+}
+
+void RHttpServer::cleanupStaleHandlers()
+{
+    R_LOG_TRACE_IN;
+    QMutexLocker locker(&this->syncMutex);
+
+    QDateTime currentTime = QDateTime::currentDateTime();
+    qint64 maxAgeMs = this->httpServerSettings.getMaxStaleHandlerAgeMs();
+
+    QList<QUuid> staleHandlerIds;
+
+    // Find stale handlers
+    for (auto iter = this->handlerCreationTimes.constBegin(); iter != this->handlerCreationTimes.constEnd(); ++iter)
+    {
+        qint64 ageMs = iter.value().msecsTo(currentTime);
+        if (ageMs > maxAgeMs)
+        {
+            staleHandlerIds.append(iter.key());
+            RLogger::warning("[%s] Found stale handler %s (age: %lld ms, max: %lld ms)\n",
+                           this->getServiceName().toUtf8().constData(),
+                           iter.key().toString(QUuid::WithoutBraces).toUtf8().constData(),
+                           ageMs,
+                           maxAgeMs);
+        }
+    }
+
+    // Remove stale handlers
+    for (const QUuid &handlerId : staleHandlerIds)
+    {
+        RHttpServerHandler *handler = this->serverHandlers.value(handlerId, nullptr);
+        if (handler)
+        {
+            // Send timeout response to wake up waiting thread
+            RHttpMessage timeoutResponse;
+            timeoutResponse.setErrorType(RError::Timeout);
+            timeoutResponse.setBody("Handler cleanup: request exceeded maximum age");
+            handler->sendReply(timeoutResponse);
+
+            delete handler;
+        }
+        this->serverHandlers.remove(handlerId);
+        this->handlerCreationTimes.remove(handlerId);
+    }
+
+    if (!staleHandlerIds.isEmpty())
+    {
+        RLogger::warning("[%s] Cleaned up %d stale handler(s). Remaining handlers: %d\n",
+                       this->getServiceName().toUtf8().constData(),
+                       staleHandlerIds.size(),
+                       this->serverHandlers.size());
+    }
+
+    // Log warning if handler count is high
+    if (this->serverHandlers.size() > 100)
+    {
+        RLogger::warning("[%s] High number of active handlers: %d. This may indicate a resource leak.\n",
+                       this->getServiceName().toUtf8().constData(),
+                       this->serverHandlers.size());
+    }
+
     R_LOG_TRACE_OUT;
 }
 
@@ -457,6 +602,6 @@ void RHttpServer::onStartedEncryptionHandshake(QSslSocket *socket)
     if (socket->waitForEncrypted())
     {
         QString commonName = RTlsTrustStore::findCN(socket->peerCertificate());
-        RLogger::warning("[%s] Incomming connection from \"%s\"\n",this->getServiceName().toUtf8().constData(),commonName.toUtf8().constData());
+        RLogger::info("[%s] Incoming connection from \"%s\"\n",this->getServiceName().toUtf8().constData(),commonName.toUtf8().constData());
     }
 }
