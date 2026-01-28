@@ -1,8 +1,10 @@
 #include <QFile>
 #include <QSslKey>
+#include <QSslCertificate>
 #include <QNetworkProxy>
 #include <QCoreApplication>
 #include <QTimer>
+#include <QDateTime>
 
 #include <rbl_error.h>
 #include <rbl_logger.h>
@@ -105,6 +107,7 @@ QSslConfiguration RHttpClient::buildSslConfiguration() const
                          "Couldn't retrieve SSL CA certificate from file \"%s\".",
                          this->httpClientSettings.getTlsTrustStore().getCertificateFile().toUtf8().constData());
         }
+        this->checkCertificateExpiry(caCertificates, this->httpClientSettings.getTlsTrustStore().getCertificateFile());
 
         sslConfig.setCaCertificates(caCertificates);
     }
@@ -134,6 +137,7 @@ QSslConfiguration RHttpClient::buildSslConfiguration() const
                          "Couldn't retrieve SSL client certificate from file \"%s\".",
                          this->httpClientSettings.getTlsKeyStore().getCertificateFile().toUtf8().constData());
         }
+        this->checkCertificateExpiry(clientCertificates, this->httpClientSettings.getTlsKeyStore().getCertificateFile());
 
         QSslKey privateKey(this->loadPrivateKey());
         if (privateKey.isNull())
@@ -191,6 +195,56 @@ QSslKey RHttpClient::loadPrivateKey() const
         }
     }
     return QSslKey();
+}
+
+void RHttpClient::checkCertificateExpiry(const QList<QSslCertificate> &certificates, const QString &certificateFile) const
+{
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+
+    for (const QSslCertificate &certificate : certificates)
+    {
+        if (certificate.isNull())
+        {
+            continue;
+        }
+
+        QString subjectName = certificate.subjectDisplayName();
+        QDateTime expiryDate = certificate.expiryDate();
+        QDateTime effectiveDate = certificate.effectiveDate();
+
+        RLogger::info("Certificate \"%s\" valid from %s to %s\n",
+                      subjectName.toUtf8().constData(),
+                      effectiveDate.toString(Qt::ISODate).toUtf8().constData(),
+                      expiryDate.toString(Qt::ISODate).toUtf8().constData());
+
+        if (currentDateTime < effectiveDate)
+        {
+            throw RError(RError::Application, R_ERROR_REF,
+                         "Certificate \"%s\" from file \"%s\" is not yet valid (effective date: %s).",
+                         subjectName.toUtf8().constData(),
+                         certificateFile.toUtf8().constData(),
+                         effectiveDate.toString(Qt::ISODate).toUtf8().constData());
+        }
+
+        if (currentDateTime > expiryDate)
+        {
+            throw RError(RError::Application, R_ERROR_REF,
+                         "Certificate \"%s\" from file \"%s\" has expired (expiry date: %s).",
+                         subjectName.toUtf8().constData(),
+                         certificateFile.toUtf8().constData(),
+                         expiryDate.toString(Qt::ISODate).toUtf8().constData());
+        }
+
+        qint64 daysUntilExpiry = currentDateTime.daysTo(expiryDate);
+        if (daysUntilExpiry <= 30)
+        {
+            RLogger::warning("Certificate \"%s\" from file \"%s\" will expire in %lld days (%s).\n",
+                            subjectName.toUtf8().constData(),
+                            certificateFile.toUtf8().constData(),
+                            daysUntilExpiry,
+                            expiryDate.toString(Qt::ISODate).toUtf8().constData());
+        }
+    }
 }
 
 QString RHttpClient::getKeyAlgorithmName(QSsl::KeyAlgorithm algorithm)

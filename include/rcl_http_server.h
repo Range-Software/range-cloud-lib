@@ -83,6 +83,9 @@ class RHttpServer : public QObject
         //! Load private key and try all available algorithms.
         QSslKey loadPrivateKey() const;
 
+        //! Check certificate expiry dates.
+        void checkCertificateExpiry(const QList<QSslCertificate> &certificates, const QString &certificateFile) const;
+
         //! Returns name of given algorithm.
         static QString getKeyAlgorithmName(QSsl::KeyAlgorithm algorithm);
 
