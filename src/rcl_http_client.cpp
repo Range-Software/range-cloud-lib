@@ -374,10 +374,21 @@ void RHttpClient::onFinished()
 void RHttpClient::onEncrypted()
 {
     QSslConfiguration sslConfig = this->networkReply->sslConfiguration();
+    QSslCertificate certificate = sslConfig.peerCertificate();
 
-    RLogger::debug("SSL protocol: %s\n",RTlsTrustStore::sslProtocolToString(sslConfig.protocol()).toUtf8().constData());
-    RLogger::debug("SSL Cipher: %s\n", sslConfig.sessionCipher().name().toUtf8().constData());
-    RLogger::debug("SSL Peer CN(s): %s\n", sslConfig.peerCertificate().subjectInfo(QSslCertificate::CommonName).join(" ; ").toUtf8().constData());
+    QString commonName = RTlsTrustStore::findCN(sslConfig.peerCertificate());
+
+    RLogger::debug("SSL protocol: %s\n",
+                   RTlsTrustStore::sslProtocolToString(sslConfig.protocol()).toUtf8().constData());
+    RLogger::debug("SSL Cipher: %s\n",
+                   sslConfig.sessionCipher().name().toUtf8().constData());
+    RLogger::debug("SSL Peer CN: %s\n",
+                   commonName.toUtf8().constData());
+    RLogger::debug("SSL Certificate validity: [%s - %s]\n",
+                   certificate.effectiveDate().toString().toUtf8().constData(),
+                   certificate.expiryDate().toString().toUtf8().constData());
+    RLogger::debug("SSL Certificate serial no.: %s\n",
+                   certificate.serialNumber().constData());
 }
 
 void RHttpClient::onSslErrors(const QList<QSslError> &errors)

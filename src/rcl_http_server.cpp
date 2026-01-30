@@ -671,12 +671,15 @@ void RHttpServer::onStartedEncryptionHandshake(QSslSocket *socket)
         RLogger::debug("[%s] SSL Cipher: %s\n",
                        this->getServiceName().toUtf8().constData(),
                        socket->sessionCipher().name().toUtf8().constData());
-        RLogger::debug("[%s] SSL Peer CN(s): %s\n",
+        RLogger::debug("[%s] SSL Peer CN: %s\n",
                        this->getServiceName().toUtf8().constData(),
-                       certificate.subjectInfo(QSslCertificate::CommonName).join(" ; ").toUtf8().constData());
+                       commonName.toUtf8().constData());
         RLogger::debug("[%s] SSL Certificate validity: [%s - %s]\n",
                        this->getServiceName().toUtf8().constData(),
                        certificate.effectiveDate().toString().toUtf8().constData(),
                        certificate.expiryDate().toString().toUtf8().constData());
+        RLogger::debug("[%s] SSL Certificate serial no.: %s\n",
+                       this->getServiceName().toUtf8().constData(),
+                       certificate.serialNumber().constData());
     }
 }
