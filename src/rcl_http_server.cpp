@@ -4,6 +4,7 @@
 #include <QHttpServerResponse>
 #include <QFile>
 #include <QSslCertificate>
+#include <QSslCipher>
 #include <QSslKey>
 #include <QSslServer>
 #include <QLoggingCategory>
@@ -656,7 +657,26 @@ void RHttpServer::onStartedEncryptionHandshake(QSslSocket *socket)
 {
     if (socket->waitForEncrypted())
     {
-        QString commonName = RTlsTrustStore::findCN(socket->peerCertificate());
-        RLogger::info("[%s] Incoming connection from \"%s\"\n",this->getServiceName().toUtf8().constData(),commonName.toUtf8().constData());
+        QSslCertificate certificate = socket->peerCertificate();
+
+        QString commonName = RTlsTrustStore::findCN(certificate);
+
+        RLogger::info("[%s] Incoming connection from \"%s\"\n",
+                      this->getServiceName().toUtf8().constData(),
+                      commonName.toUtf8().constData());
+
+        RLogger::debug("[%s] SSL protocol: %s\n",
+                       this->getServiceName().toUtf8().constData(),
+                       RTlsTrustStore::sslProtocolToString(socket->protocol()).toUtf8().constData());
+        RLogger::debug("[%s] SSL Cipher: %s\n",
+                       this->getServiceName().toUtf8().constData(),
+                       socket->sessionCipher().name().toUtf8().constData());
+        RLogger::debug("[%s] SSL Peer CN(s): %s\n",
+                       this->getServiceName().toUtf8().constData(),
+                       certificate.subjectInfo(QSslCertificate::CommonName).join(" ; ").toUtf8().constData());
+        RLogger::debug("[%s] SSL Certificate validity: [%s - %s]\n",
+                       this->getServiceName().toUtf8().constData(),
+                       certificate.effectiveDate().toString().toUtf8().constData(),
+                       certificate.expiryDate().toString().toUtf8().constData());
     }
 }

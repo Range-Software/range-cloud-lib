@@ -11,7 +11,6 @@
 #include <QSslServer>
 #include <QTimer>
 #include <QDateTime>
-#include <memory>
 
 #include "rcl_auth_token_validator.h"
 #include "rcl_http_message.h"
