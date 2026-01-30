@@ -95,6 +95,8 @@ class RHttpClient : public QObject
 
         void onFinished();
 
+        void onEncrypted();
+
         void onSslErrors(const QList<QSslError> &errors);
 
         void onRequestAvailable(const RHttpMessage &httpMessageRequest);

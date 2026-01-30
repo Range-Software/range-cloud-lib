@@ -226,3 +226,39 @@ QString RTlsTrustStore::findCN(const QString &certificateFile)
     }
     return RTlsTrustStore::findCN(sslCertificates.at(0));
 }
+
+QString RTlsTrustStore::sslProtocolToString(QSsl::SslProtocol protocol)
+{
+    switch (protocol) {
+    case QSsl::UnknownProtocol:
+        return "Unknown Protocol";
+    case QSsl::TlsV1_0:
+        return "TLS 1.0";
+    case QSsl::TlsV1_0OrLater:
+        return "TLSv1.0 or later";
+    case QSsl::TlsV1_1:
+        return "TLS 1.1";
+    case QSsl::TlsV1_1OrLater:
+        return "TLSv1.1 or later";
+    case QSsl::TlsV1_2:
+        return "TLS 1.2";
+    case QSsl::TlsV1_2OrLater:
+        return "TLSv1.2 or later";
+    case QSsl::TlsV1_3:
+        return "TLS 1.3";
+    case QSsl::TlsV1_3OrLater:
+        return "TLSv1.3 or later";
+    case QSsl::AnyProtocol:
+        return "Any Protocol";
+    case QSsl::SecureProtocols:
+        return "Secure Protocols (TLS 1.2+)";
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    case QSsl::SslV2:
+        return "SSL v2 (deprecated)";
+    case QSsl::SslV3:
+        return "SSL v3 (deprecated)";
+#endif
+    default:
+        return QString("Unknown enum value (%1)").arg(static_cast<int>(protocol));
+    }
+}

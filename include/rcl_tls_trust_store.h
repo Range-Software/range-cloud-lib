@@ -54,6 +54,9 @@ class RTlsTrustStore
         //! Find certificate common name.
         static QString findCN(const QString &certificateFile);
 
+        //! Convert QSsl::SslProtocol to string.
+        static QString sslProtocolToString(QSsl::SslProtocol protocol);
+
 };
 
 #endif // RCL_TLS_TRUST_STORE_H

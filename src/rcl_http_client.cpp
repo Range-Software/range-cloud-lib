@@ -1,6 +1,7 @@
 #include <QFile>
 #include <QSslKey>
 #include <QSslCertificate>
+#include <QSslCipher>
 #include <QNetworkProxy>
 #include <QCoreApplication>
 #include <QTimer>
@@ -370,6 +371,15 @@ void RHttpClient::onFinished()
     R_LOG_TRACE_OUT;
 }
 
+void RHttpClient::onEncrypted()
+{
+    QSslConfiguration sslConfig = this->networkReply->sslConfiguration();
+
+    RLogger::debug("SSL protocol: %s\n",RTlsTrustStore::sslProtocolToString(sslConfig.protocol()).toUtf8().constData());
+    RLogger::debug("SSL Cipher: %s\n", sslConfig.sessionCipher().name().toUtf8().constData());
+    RLogger::debug("SSL Peer CN(s): %s\n", sslConfig.peerCertificate().subjectInfo(QSslCertificate::CommonName).join(" ; ").toUtf8().constData());
+}
+
 void RHttpClient::onSslErrors(const QList<QSslError> &errors)
 {
     R_LOG_TRACE_IN;
@@ -435,6 +445,7 @@ void RHttpClient::onRequestAvailable(const RHttpMessage &httpMessageRequest)
     QObject::connect(this->networkReply, &QIODevice::readyRead, this, &RHttpClient::onReadyRead);
     QObject::connect(this->networkReply, &QNetworkReply::errorOccurred, this, &RHttpClient::onErrorOccurred);
     QObject::connect(this->networkReply, &QNetworkReply::finished, this, &RHttpClient::onFinished);
+    QObject::connect(this->networkReply, &QNetworkReply::encrypted, this, &RHttpClient::onEncrypted);
     QObject::connect(this->networkReply, &QNetworkReply::sslErrors, this, &RHttpClient::onSslErrors);
     QObject::connect(this->networkReply, &QNetworkReply::uploadProgress, this, &RHttpClient::onUploadProgress);
     QObject::connect(this->networkReply, &QNetworkReply::downloadProgress, this, &RHttpClient::onDownloadProgress);
