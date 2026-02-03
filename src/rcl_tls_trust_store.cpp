@@ -2,6 +2,7 @@
 #include <QSslCertificateExtension>
 
 #include "rcl_tls_trust_store.h"
+#include "rcl_open_ssl_tool.h"
 
 void RTlsTrustStore::_init(const RTlsTrustStore *pTlsTrustStore)
 {
@@ -37,6 +38,15 @@ RTlsTrustStore &RTlsTrustStore::operator =(const RTlsTrustStore &tlsTrustStore)
 {
     this->_init(&tlsTrustStore);
     return (*this);
+}
+
+bool RTlsTrustStore::isValid() const
+{
+    if (this->certificateFile.isEmpty())
+    {
+        return false;
+    }
+    return true;
 }
 
 const QString &RTlsTrustStore::getCertificateFile() const
@@ -227,19 +237,55 @@ QString RTlsTrustStore::findCN(const QString &certificateFile)
     return RTlsTrustStore::findCN(sslCertificates.at(0));
 }
 
+QPair<QDateTime, QDateTime> RTlsTrustStore::findValidity(const QString &certificateFile)
+{
+    QList<QSslCertificate> sslCertificates = QSslCertificate::fromPath(certificateFile,QSsl::EncodingFormat::Pem);
+    if (sslCertificates.size() == 0)
+    {
+        return QPair<QDateTime, QDateTime>();
+    }
+
+    QPair<QDateTime, QDateTime> validity;
+
+    validity.first = sslCertificates.at(0).effectiveDate();
+    validity.second = sslCertificates.at(0).expiryDate();
+
+    return validity;
+}
+
+QMap<QString, QString> RTlsTrustStore::findSubjectFields(const QString &certificateFile)
+{
+    QMap<QString, QString> subjectMap;
+
+    const QList<QSslCertificate> clientCertificates = QSslCertificate::fromPath(certificateFile,QSsl::EncodingFormat::Pem);
+    if (clientCertificates.size() > 0)
+    {
+        QMap<QSslCertificate::SubjectInfo,QString> subjectInfoMap;
+        subjectInfoMap.insert(QSslCertificate::CountryName,ROpenSslTool::CertificateSubject::Country::key);
+        subjectInfoMap.insert(QSslCertificate::StateOrProvinceName,ROpenSslTool::CertificateSubject::State::key);
+        subjectInfoMap.insert(QSslCertificate::LocalityName,ROpenSslTool::CertificateSubject::Location::key);
+        subjectInfoMap.insert(QSslCertificate::Organization,ROpenSslTool::CertificateSubject::Organization::key);
+        subjectInfoMap.insert(QSslCertificate::OrganizationalUnitName,ROpenSslTool::CertificateSubject::OrganizationUnit::key);
+        subjectInfoMap.insert(QSslCertificate::CommonName,ROpenSslTool::CertificateSubject::CommonName::key);
+
+        for (auto it=subjectInfoMap.cbegin();it!=subjectInfoMap.cend();++it)
+        {
+            QStringList values = clientCertificates.at(0).subjectInfo(it.key());
+            if (values.size() > 0)
+            {
+                subjectMap.insert(it.value(),values.at(0));
+            }
+        }
+    }
+
+    return subjectMap;
+}
+
 QString RTlsTrustStore::sslProtocolToString(QSsl::SslProtocol protocol)
 {
     switch (protocol) {
     case QSsl::UnknownProtocol:
         return "Unknown Protocol";
-    case QSsl::TlsV1_0:
-        return "TLS 1.0";
-    case QSsl::TlsV1_0OrLater:
-        return "TLSv1.0 or later";
-    case QSsl::TlsV1_1:
-        return "TLS 1.1";
-    case QSsl::TlsV1_1OrLater:
-        return "TLSv1.1 or later";
     case QSsl::TlsV1_2:
         return "TLS 1.2";
     case QSsl::TlsV1_2OrLater:
@@ -252,13 +298,7 @@ QString RTlsTrustStore::sslProtocolToString(QSsl::SslProtocol protocol)
         return "Any Protocol";
     case QSsl::SecureProtocols:
         return "Secure Protocols (TLS 1.2+)";
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    case QSsl::SslV2:
-        return "SSL v2 (deprecated)";
-    case QSsl::SslV3:
-        return "SSL v3 (deprecated)";
-#endif
     default:
-        return QString("Unknown enum value (%1)").arg(static_cast<int>(protocol));
+        return QString("Unknown enum value (%1) or unsupported protocol").arg(static_cast<int>(protocol));
     }
 }

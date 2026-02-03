@@ -33,6 +33,8 @@ qt_add_library(range-cloud-lib
         src/rcl_http_server_settings.cpp
         src/rcl_http_settings.cpp
         src/rcl_network_message.cpp
+        src/rcl_open_ssl_tool.cpp
+        src/rcl_open_ssl_tool_settings.cpp
         src/rcl_report_record.cpp
         src/rcl_software_manager.cpp
         src/rcl_software_manager_settings.cpp
@@ -70,6 +72,8 @@ qt_add_library(range-cloud-lib
         include/rcl_http_server_settings.h
         include/rcl_http_settings.h
         include/rcl_network_message.h
+        include/rcl_open_ssl_tool.h
+        include/rcl_open_ssl_tool_settings.h
         include/rcl_report_record.h
         include/rcl_software_manager.h
         include/rcl_software_manager_settings.h

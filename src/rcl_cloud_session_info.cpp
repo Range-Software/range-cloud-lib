@@ -31,6 +31,16 @@ RCloudSessionInfo &RCloudSessionInfo::operator =(const RCloudSessionInfo &sessio
     return (*this);
 }
 
+bool RCloudSessionInfo::isValid() const
+{
+    if (this->name.isEmpty() ||
+        this->host.hostName.isEmpty())
+    {
+        return false;
+    }
+    return true;
+}
+
 const QString &RCloudSessionInfo::getName() const
 {
     return this->name;

@@ -35,6 +35,9 @@ class RTlsTrustStore
         //! Assignment operator (message).
         RTlsTrustStore &operator =(const RTlsTrustStore &tlsTrustStore);
 
+        //! Check whether the store is valid. When created empty store is not valid.
+        bool isValid() const;
+
         const QString &getCertificateFile() const;
 
         void setCertificateFile(const QString &certificateFile);
@@ -53,6 +56,12 @@ class RTlsTrustStore
 
         //! Find certificate common name.
         static QString findCN(const QString &certificateFile);
+
+        //! Find certificate validity.
+        static QPair<QDateTime,QDateTime> findValidity(const QString &certificateFile);
+
+        //! Find certificate subject field map.
+        static QMap<QString, QString> findSubjectFields(const QString &certificateFile);
 
         //! Convert QSsl::SslProtocol to string.
         static QString sslProtocolToString(QSsl::SslProtocol protocol);

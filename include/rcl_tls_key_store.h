@@ -38,6 +38,9 @@ class RTlsKeyStore
         //! Assignment operator (message).
         RTlsKeyStore &operator =(const RTlsKeyStore &tlsKeyStore);
 
+        //! Check whether the store is valid. When created empty store is not valid.
+        bool isValid() const;
+
         const QString &getCertificateFile() const;
 
         void setCertificateFile(const QString &certificateFile);

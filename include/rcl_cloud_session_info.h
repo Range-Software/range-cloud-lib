@@ -56,6 +56,9 @@ class RCloudSessionInfo
         //! Assignment operator.
         RCloudSessionInfo &operator =(const RCloudSessionInfo &session);
 
+        //! Return if session info is valid. When created empty session is invalid.
+        bool isValid() const;
+
         //! Return const reference to name.
         const QString &getName() const;
 

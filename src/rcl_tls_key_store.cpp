@@ -40,6 +40,15 @@ RTlsKeyStore &RTlsKeyStore::operator =(const RTlsKeyStore &tlsKeyStore)
     return (*this);
 }
 
+bool RTlsKeyStore::isValid() const
+{
+    if (this->certificateFile.isEmpty() || this->keyFile.isEmpty() || this->password.isEmpty())
+    {
+        return false;
+    }
+    return true;
+}
+
 const QString &RTlsKeyStore::getCertificateFile() const
 {
     return this->certificateFile;
