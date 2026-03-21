@@ -95,6 +95,7 @@ QSslConfiguration RHttpClient::buildSslConfiguration() const
     R_LOG_TRACE_IN;
 
     QSslConfiguration sslConfig;
+    sslConfig.setCaCertificates(QSslConfiguration::systemCaCertificates());
 
     if (!this->httpClientSettings.getTlsTrustStore().getCertificateFile().isEmpty())
     {
@@ -399,6 +400,8 @@ void RHttpClient::onSslErrors(const QList<QSslError> &errors)
         RLogger::error("SSL error: %s (%s).\n",
                        sslError.errorString().toUtf8().constData(),
                        sslError.certificate().subjectDisplayName().toUtf8().constData());
+        RLogger::info("%s\n",RTlsTrustStore::toText(sslError.certificate()).toUtf8().constData());
+
     }
     R_LOG_TRACE_OUT;
 }
