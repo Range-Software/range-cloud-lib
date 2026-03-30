@@ -1,6 +1,5 @@
 # Create a static library
 find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
 
 qt_add_library(range-cloud-lib
     STATIC
@@ -103,9 +102,8 @@ target_link_libraries(range-cloud-lib
         Qt6::HttpServer
         Qt6::Network
         common_defines
-
 )
-target_link_libraries(range-cloud-lib PRIVATE Qt6::Core)
+
 target_link_libraries(range-cloud-lib PRIVATE Qt6::Core)
 
 qt_add_translations(range-cloud-lib
