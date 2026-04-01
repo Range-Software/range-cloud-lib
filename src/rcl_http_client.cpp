@@ -410,7 +410,12 @@ void RHttpClient::onRequestAvailable(const RHttpMessage &httpMessageRequest)
 {
     R_LOG_TRACE_IN;
 
-    QUrl url(QString("%1/%2").arg(this->httpClientSettings.getUrl(),httpMessageRequest.getTo()));
+    QString urlString = this->httpClientSettings.getUrl();
+    if (!httpMessageRequest.getTo().isEmpty())
+    {
+        urlString += "/" + httpMessageRequest.getTo();
+    }
+    QUrl url(urlString);
     url.setQuery(httpMessageRequest.getUrlQuery());
 
     RLogger::info("Request url = \"%s\"\n",url.toDisplayString().toUtf8().constData());
@@ -418,6 +423,12 @@ void RHttpClient::onRequestAvailable(const RHttpMessage &httpMessageRequest)
     QNetworkRequest networkRequest(url);
     networkRequest.setHeader(QNetworkRequest::UserAgentHeader, RVendor::name() + "/" + RVendor::version().toString());
     networkRequest.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
+
+    const QHttpHeaders &reqHeaders = httpMessageRequest.getRequestHeaders();
+    for (qsizetype i = 0; i < reqHeaders.size(); ++i)
+    {
+        networkRequest.setRawHeader(QByteArray(reqHeaders.nameAt(i)), QByteArray(reqHeaders.valueAt(i)));
+    }
 
     try
     {

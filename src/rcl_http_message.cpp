@@ -8,6 +8,7 @@ void RHttpMessage::_init(const RHttpMessage *pHttpMessage)
     {
         this->method = pHttpMessage->method;
         this->urlQuery = pHttpMessage->urlQuery;
+        this->requestHeaders = pHttpMessage->requestHeaders;
         this->responseHeaders = pHttpMessage->responseHeaders;
     }
 }
@@ -94,6 +95,16 @@ const QUrlQuery &RHttpMessage::getUrlQuery() const
 void RHttpMessage::setUrlQuery(const QUrlQuery &urlQuery)
 {
     this->urlQuery = urlQuery;
+}
+
+const QHttpHeaders &RHttpMessage::getRequestHeaders() const
+{
+    return this->requestHeaders;
+}
+
+void RHttpMessage::setRequestHeaders(const QHttpHeaders &requestHeaders)
+{
+    this->requestHeaders = requestHeaders;
 }
 
 const QHttpHeaders &RHttpMessage::getResponseHeaders() const

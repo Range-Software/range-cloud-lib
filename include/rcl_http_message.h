@@ -23,6 +23,8 @@ class RHttpMessage : public RNetworkMessage
         QHttpServerRequest::Method method;
         //! Http url query.
         QUrlQuery urlQuery;
+        //! Request headers.
+        QHttpHeaders requestHeaders;
         //! Response header.
         QHttpHeaders responseHeaders;
 
@@ -57,6 +59,12 @@ class RHttpMessage : public RNetworkMessage
 
         //! Set HTTP url.
         void setUrlQuery(const QUrlQuery &urlQuery);
+
+        //! Return request headers.
+        const QHttpHeaders &getRequestHeaders() const;
+
+        //! Set request headers.
+        void setRequestHeaders(const QHttpHeaders &requestHeaders);
 
         //! Return response headers.
         const QHttpHeaders &getResponseHeaders() const;
