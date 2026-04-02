@@ -64,7 +64,7 @@ void RCloudSessionManager::write(const QString &fileName) const
     if(!outFile.open(QIODevice::WriteOnly))
     {
         throw RError(RError::Type::OpenFile,R_ERROR_REF,
-                     "Failed to open actions file \"%s\" for writing. %s.",
+                     "Failed to open sessions file \"%s\" for writing. %s.",
                      outFile.fileName().toUtf8().constData(),
                      outFile.errorString().toUtf8().constData());
     }
@@ -252,12 +252,12 @@ void RCloudSessionManager::fromJson(const QJsonObject &json)
     }
     if (const QJsonValue &v = json["sessions"]; v.isArray())
     {
-        const QJsonArray &actionsArray = v.toArray();
+        const QJsonArray &sessionsArray = v.toArray();
         this->sessions.clear();
-        this->sessions.reserve(actionsArray.size());
-        for (const QJsonValue &action : actionsArray)
+        this->sessions.reserve(sessionsArray.size());
+        for (const QJsonValue &session : sessionsArray)
         {
-            this->sessions.append(RCloudSessionInfo::fromJson(action.toObject()));
+            this->sessions.append(RCloudSessionInfo::fromJson(session.toObject()));
         }
     }
 
@@ -290,12 +290,12 @@ QJsonObject RCloudSessionManager::toJson() const
     // Active session
     json["activeSessions"] = this->activeSessionName;
     // Sessions
-    QJsonArray actionsArray;
+    QJsonArray sessionsArray;
     for (const RCloudSessionInfo &sessionInfo : this->sessions)
     {
-        actionsArray.append(sessionInfo.toJson());
+        sessionsArray.append(sessionInfo.toJson());
     }
-    json["sessions"] = actionsArray;
+    json["sessions"] = sessionsArray;
 
     return json;
 }

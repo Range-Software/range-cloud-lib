@@ -95,13 +95,13 @@ class RCloudSessionManager : public QObject
         //! Active session changed.
         void activeSessionChanged(RCloudSessionInfo sessionInfo);
 
-        //! RCloudSessionManager inserted.
+        //! Session inserted.
         void sessionInserted(const QString &sessionName);
 
-        //! RCloudSessionManager renamed.
+        //! Session renamed.
         void sessionRenamed(const QString &oldSessionName, const QString &newSessionName);
 
-        //! CSessionManager removed.
+        //! Session removed.
         void sessionRemoved(const QString &sessionName);
 
 };
