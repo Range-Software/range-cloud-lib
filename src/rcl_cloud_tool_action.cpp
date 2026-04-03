@@ -2,13 +2,12 @@
 #include <QJsonDocument>
 
 #include <rbl_error.h>
+#include <rbl_file_tools.h>
 #include <rbl_logger.h>
 
 #include "rcl_cloud_tool_action.h"
-
 #include "rcl_cloud_action.h"
 #include "rcl_cloud_tool_action.h"
-#include "rcl_file_tools.h"
 
 Q_DECLARE_METATYPE(RCloudAction);
 

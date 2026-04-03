@@ -1,10 +1,10 @@
+#include <rbl_file_tools.h>
 #include <rbl_logger.h>
 #include <rbl_utils.h>
 
 #include <QDir>
 
 #include "rcl_file_manager.h"
-#include "rcl_file_tools.h"
 
 const QString RFileManager::logPrefix = "LocalFileManager";
 
