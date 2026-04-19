@@ -315,6 +315,7 @@ void RHttpClient::onProxyAuthenticationRequired(const QNetworkProxy &, QAuthenti
 void RHttpClient::onReadyRead()
 {
     R_LOG_TRACE_IN;
+    if (!this->networkReply) { R_LOG_TRACE_OUT; return; }
     this->responseBytes.append(this->networkReply->readAll());
     R_LOG_TRACE_OUT;
 }
@@ -322,6 +323,7 @@ void RHttpClient::onReadyRead()
 void RHttpClient::onErrorOccurred(QNetworkReply::NetworkError code)
 {
     R_LOG_TRACE_IN;
+    if (!this->networkReply) { R_LOG_TRACE_OUT; return; }
 
     if (code != this->networkReply->error())
     {
@@ -353,6 +355,7 @@ void RHttpClient::onErrorOccurred(QNetworkReply::NetworkError code)
 void RHttpClient::onFinished()
 {
     R_LOG_TRACE_IN;
+    if (!this->networkReply) { R_LOG_TRACE_OUT; return; }
     RLogger::debug("Client request finished\n");
 
     this->networkErrorCode = this->networkReply->error();
@@ -374,6 +377,7 @@ void RHttpClient::onFinished()
 
 void RHttpClient::onEncrypted()
 {
+    if (!this->networkReply) return;
     QSslConfiguration sslConfig = this->networkReply->sslConfiguration();
     QSslCertificate certificate = sslConfig.peerCertificate();
 
