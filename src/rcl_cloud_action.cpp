@@ -122,6 +122,9 @@ const QString RCloudAction::Action::ProcessUpdateAccessMode::description = "Upda
 const QString RCloudAction::Action::SubmitReport::key = "submit-report";
 const QString RCloudAction::Action::SubmitReport::description = "Submit report to the cloud server";
 
+const QString RCloudAction::Action::Query::key = "query";
+const QString RCloudAction::Action::Query::description = "Send a query to the cloud server";
+
 void RCloudAction::_init(const RCloudAction *pCAction)
 {
     if (pCAction)
@@ -266,6 +269,7 @@ QMap<QString, QString> RCloudAction::getActionMap()
     actionMap.insert(Action::ProcessUpdateAccessOwner::key,Action::ProcessUpdateAccessOwner::description);
     actionMap.insert(Action::ProcessUpdateAccessMode::key,Action::ProcessUpdateAccessMode::description);
     actionMap.insert(Action::SubmitReport::key,Action::SubmitReport::description);
+    actionMap.insert(Action::Query::key,Action::Query::description);
 
     return actionMap;
 }

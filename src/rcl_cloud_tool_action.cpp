@@ -128,6 +128,7 @@ void RCloudToolAction::perform()
         case ProcessUpdateAccessOwner:
         case ProcessUpdateAccessMode:
         case SubmitReport:
+        case Query:
         {
             if (this->httpClient)
             {
@@ -734,6 +735,18 @@ QSharedPointer<RCloudToolAction> RCloudToolAction::requestSubmitReport(RHttpClie
 }
 
 QString RCloudToolAction::processSubmitReportResponse(const QByteArray &data)
+{
+    return data;
+}
+
+QSharedPointer<RCloudToolAction> RCloudToolAction::requestQuery(RHttpClient *httpClient, const QString &query, const QString &authUser, const QString &authToken)
+{
+    RCloudToolAction *toolAction = new RCloudToolAction(Query,httpClient);
+    toolAction->input.setValue<RCloudAction>(RCloudAction(QUuid::createUuid(),authUser,authToken,RCloudAction::Action::Query::key,QString(),QUuid(),query.toUtf8()));
+    return QSharedPointer<RCloudToolAction>(toolAction);
+}
+
+QString RCloudToolAction::processQueryResponse(const QByteArray &data)
 {
     return data;
 }

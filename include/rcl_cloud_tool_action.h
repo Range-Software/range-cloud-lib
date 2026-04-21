@@ -61,6 +61,7 @@ class RCloudToolAction : public RToolAction
             ProcessUpdateAccessOwner,
             ProcessUpdateAccessMode,
             SubmitReport,
+            Query,
             NTypes
         };
 
@@ -303,6 +304,12 @@ class RCloudToolAction : public RToolAction
 
         //! Process submit report response.
         static QString processSubmitReportResponse(const QByteArray &data);
+
+        //! Set action send query request.
+        static QSharedPointer<RCloudToolAction> requestQuery(RHttpClient *httpClient, const QString &query, const QString &authUser = QString(), const QString &authToken = QString());
+
+        //! Process query response.
+        static QString processQueryResponse(const QByteArray &data);
 
 };
 

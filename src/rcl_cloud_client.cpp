@@ -242,6 +242,12 @@ RToolTask *RCloudClient::requestSubmitReport(const RReportRecord &reportRecord, 
     R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestSubmitReport(new RHttpClient(this->type,this->httpClientSettings,this),reportRecord,authUser,authToken)));
 }
 
+RToolTask *RCloudClient::requestQuery(const QString &query, const QString &authUser, const QString &authToken)
+{
+    R_LOG_TRACE_IN;
+    R_LOG_TRACE_RETURN(this->submitAction(RCloudToolAction::requestQuery(new RHttpClient(this->type,this->httpClientSettings,this),query,authUser,authToken)));
+}
+
 RToolTask *RCloudClient::submitAction(const QSharedPointer<RCloudToolAction> &toolAction)
 {
     R_LOG_TRACE_IN;
@@ -462,6 +468,11 @@ void RCloudClient::onActionFinished(const QSharedPointer<RToolAction> &action)
         case RCloudToolAction::SubmitReport:
         {
             emit this->reportSubmitted(RCloudToolAction::processSubmitReportResponse(responseMessage.getBody()));
+            break;
+        }
+        case RCloudToolAction::Query:
+        {
+            emit this->queryResultAvailable(RCloudToolAction::processQueryResponse(responseMessage.getBody()));
             break;
         }
         case RCloudToolAction::Statistics:

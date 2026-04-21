@@ -226,6 +226,11 @@ class RCloudAction
                 static const QString key;
                 static const QString description;
             };
+            struct Query
+            {
+                static const QString key;
+                static const QString description;
+            };
         };
 
     protected:
