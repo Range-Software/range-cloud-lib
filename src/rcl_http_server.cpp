@@ -442,7 +442,7 @@ void RHttpServer::buildApiRoutes()
 
 void RHttpServer::buildApiRoute(const QString &actionKey)
 {
-    this->pHttpServer->route(QString("/%1/").arg(actionKey),RHttpMessage::findMethodForAction(actionKey),[=](const QHttpServerRequest &request)
+    this->pHttpServer->route(QString("/%1/").arg(actionKey),RHttpMessage::findMethodForAction(actionKey),[=, this](const QHttpServerRequest &request)
     {
         QString resourceName(request.query().queryItemValue(RCloudAction::Resource::Name::key));
         QUuid id(request.query().queryItemValue(RCloudAction::Resource::Id::key));
@@ -478,7 +478,7 @@ void RHttpServer::buildApiRoute(const QString &actionKey)
                       fromAddress.toUtf8().constData(),
                       request.url().toDisplayString().toUtf8().constData());
 
-        return QtConcurrent::run([=](const QByteArray body) {
+        return QtConcurrent::run([=, this](const QByteArray body) {
             return this->processRequest(actionKey,userName,fromAddress,resourceName,id,body);
         },request.body());
     });
