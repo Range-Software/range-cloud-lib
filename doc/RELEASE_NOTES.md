@@ -1,5 +1,7 @@
 ## Version 1.0.0
 
+### Improvements
+
 - `RHttpMessage`: request headers support added (`requestHeaders` field,
   `getRequestHeaders()`, `setRequestHeaders()`)
 - `RCloudToolAction`: new `Query` action type with `requestQuery()` and
