@@ -22,7 +22,7 @@ RFileManager::RFileManager(const RFileManagerSettings &fileManagerSettings, RClo
 
     this->initializeCacheFile();
 
-    this->localFileSystemWatcher = new QFileSystemWatcher;
+    this->localFileSystemWatcher = new QFileSystemWatcher(this);
     if (!this->localFileSystemWatcher->addPath(this->fileManagerSettings.getLocalDirectory()))
     {
         RLogger::warning("[%s] Could not add path \'%s\' to file system watcher\n",
