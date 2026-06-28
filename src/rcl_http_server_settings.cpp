@@ -10,6 +10,7 @@ void RHttpServerSettings::_init(const RHttpServerSettings *pHttpServerSettings)
         this->responseTimeoutMs = pHttpServerSettings->responseTimeoutMs;
         this->handlerCleanupIntervalMs = pHttpServerSettings->handlerCleanupIntervalMs;
         this->maxStaleHandlerAgeMs = pHttpServerSettings->maxStaleHandlerAgeMs;
+        this->maxBodySize = pHttpServerSettings->maxBodySize;
     }
     else
     {
@@ -17,6 +18,7 @@ void RHttpServerSettings::_init(const RHttpServerSettings *pHttpServerSettings)
         this->responseTimeoutMs = defaultResponseTimeoutMs;
         this->handlerCleanupIntervalMs = defaultHandlerCleanupIntervalMs;
         this->maxStaleHandlerAgeMs = defaultMaxStaleHandlerAgeMs;
+        this->maxBodySize = defaultMaxBodySize;
     }
 }
 
@@ -81,6 +83,16 @@ quint32 RHttpServerSettings::getMaxStaleHandlerAgeMs() const
 void RHttpServerSettings::setMaxStaleHandlerAgeMs(quint32 ageMs)
 {
     this->maxStaleHandlerAgeMs = ageMs;
+}
+
+qint64 RHttpServerSettings::getMaxBodySize() const
+{
+    return this->maxBodySize;
+}
+
+void RHttpServerSettings::setMaxBodySize(qint64 maxBodySize)
+{
+    this->maxBodySize = maxBodySize;
 }
 
 bool RHttpServerSettings::validate(QString *errorMessage) const

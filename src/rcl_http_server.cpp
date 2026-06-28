@@ -115,6 +115,7 @@ RHttpServer::RHttpServer(Type type, const RHttpServerSettings &httpServerSetting
 #if QT_VERSION > QT_VERSION_CHECK(6, 9, 0)
     QHttpServerConfiguration httpServerConfiguration = this->pHttpServer->configuration();
     httpServerConfiguration.setRateLimitPerSecond(this->httpServerSettings.getRateLimitPerSecond());
+    httpServerConfiguration.setMaximumBodySize(httpServerSettings.getMaxBodySize());
     this->pHttpServer->setConfiguration(httpServerConfiguration);
 #else
     RLogger::warning("[%s] Rate limiting is not available in Qt %s (requires Qt 6.10+). "
