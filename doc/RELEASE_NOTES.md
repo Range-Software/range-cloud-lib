@@ -4,6 +4,10 @@
 
 - Added max body size
 
+### Bug fixes
+
+- Missing object parrent results in memory leak
+
 ---
 
 ## Version 1.0.1
