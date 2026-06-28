@@ -112,3 +112,8 @@ qt_add_translations(range-cloud-lib
         translations/sk.ts
     RESOURCE_PREFIX /i18n/range-cloud-lib
 )
+
+# Unit tests (opt-in via -DRANGE_BUILD_TESTS=ON)
+if(RANGE_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()

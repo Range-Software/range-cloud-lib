@@ -1,3 +1,19 @@
+## Version 1.0.2
+
+### Improvements
+
+- Added max body size
+
+---
+
+## Version 1.0.1
+
+### Improvements
+
+- Added unit tests based on QTest framework
+
+---
+
 ## Version 1.0.0
 
 ### Improvements

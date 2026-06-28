@@ -14,6 +14,7 @@ class RHttpServerSettings : public RHttpSettings
     static quint32 constexpr defaultResponseTimeoutMs = 10000;
     static quint32 constexpr defaultHandlerCleanupIntervalMs = 60000;
     static quint32 constexpr defaultMaxStaleHandlerAgeMs = 120000;
+    static qint64 constexpr defaultMaxBodySize = 104857600;
 
     protected:
 
@@ -21,6 +22,7 @@ class RHttpServerSettings : public RHttpSettings
         quint32 responseTimeoutMs;
         quint32 handlerCleanupIntervalMs;
         quint32 maxStaleHandlerAgeMs;
+        qint64 maxBodySize;
 
     protected:
 
@@ -64,6 +66,13 @@ class RHttpServerSettings : public RHttpSettings
 
         //! Set maximum stale handler age in milliseconds.
         void setMaxStaleHandlerAgeMs(quint32 ageMs);
+
+
+        //! Return maximum body size in bytes.
+        qint64 getMaxBodySize() const;
+
+        //! Set maximum body size in bytes.
+        void setMaxBodySize(qint64 maxBodySize);
 
         //! Validate settings and return true if valid.
         bool validate(QString *errorMessage = nullptr) const;
