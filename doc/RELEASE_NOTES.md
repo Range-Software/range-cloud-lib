@@ -1,3 +1,11 @@
+## Version 1.0.3
+
+### Bug fixes
+
+- Fixed double-delete and lost-wakeup races in HTTP server handlers
+
+---
+
 ## Version 1.0.2
 
 ### Improvements
