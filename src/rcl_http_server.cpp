@@ -12,6 +12,7 @@
 #include <QMutexLocker>
 #include <QWaitCondition>
 #include <QDateTime>
+#include <QDeadlineTimer>
 #include <memory>
 
 #include "rcl_cloud_action.h"
@@ -70,9 +71,18 @@ class RHttpServerHandler
             RLogger::debug("[%s] Waiting for response (timeout: %d ms)\n",
                           this->serviceName.toUtf8().constData(), timeout);
 
-            bool success = this->responseCondition.wait(&this->syncMutex, timeout);
+            // The reply may arrive before this thread starts waiting, so the
+            // ready flag must be checked before and after each wait.
+            QDeadlineTimer deadline(timeout);
+            while (!this->responseReady)
+            {
+                if (!this->responseCondition.wait(&this->syncMutex, deadline))
+                {
+                    break;
+                }
+            }
 
-            if (success && this->responseReady)
+            if (this->responseReady)
             {
                 responseMessage = this->responseMessage;
                 RLogger::debug("[%s] Response received\n",this->serviceName.toUtf8().constData());
@@ -83,7 +93,7 @@ class RHttpServerHandler
                                this->serviceName.toUtf8().constData(), timeout);
             }
             R_LOG_TRACE_OUT;
-            return success && this->responseReady;
+            return this->responseReady;
         }
 
 };
@@ -617,7 +627,8 @@ void RHttpServer::cleanupStaleHandlers()
         }
     }
 
-    // Remove stale handlers
+    // Remove stale handlers. Handlers are owned by the request thread inside
+    // processRequest(), so they must never be deleted here — only woken up.
     for (const QUuid &handlerId : staleHandlerIds)
     {
         RHttpServerHandler *handler = this->serverHandlers.value(handlerId, nullptr);
@@ -628,8 +639,6 @@ void RHttpServer::cleanupStaleHandlers()
             timeoutResponse.setErrorType(RError::Timeout);
             timeoutResponse.setBody("Handler cleanup: request exceeded maximum age");
             handler->sendReply(timeoutResponse);
-
-            delete handler;
         }
         this->serverHandlers.remove(handlerId);
         this->handlerCreationTimes.remove(handlerId);
