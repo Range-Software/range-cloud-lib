@@ -7,6 +7,7 @@
 
 #include "rcl_cloud_tool_action.h"
 #include "rcl_cloud_action.h"
+#include "rcl_cloud_ai_query_response.h"
 #include "rcl_cloud_tool_action.h"
 
 Q_DECLARE_METATYPE(RCloudAction);
@@ -128,7 +129,7 @@ void RCloudToolAction::perform()
         case ProcessUpdateAccessOwner:
         case ProcessUpdateAccessMode:
         case SubmitReport:
-        case Query:
+        case AIQuery:
         {
             if (this->httpClient)
             {
@@ -739,14 +740,14 @@ QString RCloudToolAction::processSubmitReportResponse(const QByteArray &data)
     return data;
 }
 
-QSharedPointer<RCloudToolAction> RCloudToolAction::requestQuery(RHttpClient *httpClient, const QString &query, const QString &authUser, const QString &authToken)
+QSharedPointer<RCloudToolAction> RCloudToolAction::requestAIQuery(RHttpClient *httpClient, const RCloudAIQueryRequest &aiQueryRequest, const QString &authUser, const QString &authToken)
 {
-    RCloudToolAction *toolAction = new RCloudToolAction(Query,httpClient);
-    toolAction->input.setValue<RCloudAction>(RCloudAction(QUuid::createUuid(),authUser,authToken,RCloudAction::Action::Query::key,QString(),QUuid(),query.toUtf8()));
+    RCloudToolAction *toolAction = new RCloudToolAction(AIQuery,httpClient);
+    toolAction->input.setValue<RCloudAction>(RCloudAction(QUuid::createUuid(),authUser,authToken,RCloudAction::Action::AIQuery::key,QString(),QUuid(),QJsonDocument(aiQueryRequest.toJson()).toJson()));
     return QSharedPointer<RCloudToolAction>(toolAction);
 }
 
-QString RCloudToolAction::processQueryResponse(const QByteArray &data)
+QString RCloudToolAction::processAIQueryResponse(const QByteArray &data)
 {
-    return data;
+    return RCloudAIQueryResponse::fromJson(QJsonDocument::fromJson(data).object()).getResponseMessage();
 }

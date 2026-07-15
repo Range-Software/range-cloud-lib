@@ -12,6 +12,7 @@
 #include "rcl_cloud_action_info.h"
 #include "rcl_file_info.h"
 #include "rcl_http_client.h"
+#include "rcl_cloud_ai_query_request.h"
 #include "rcl_cloud_process_info.h"
 #include "rcl_cloud_process_request.h"
 #include "rcl_report_record.h"
@@ -61,7 +62,7 @@ class RCloudToolAction : public RToolAction
             ProcessUpdateAccessOwner,
             ProcessUpdateAccessMode,
             SubmitReport,
-            Query,
+            AIQuery,
             NTypes
         };
 
@@ -305,11 +306,11 @@ class RCloudToolAction : public RToolAction
         //! Process submit report response.
         static QString processSubmitReportResponse(const QByteArray &data);
 
-        //! Set action send query request.
-        static QSharedPointer<RCloudToolAction> requestQuery(RHttpClient *httpClient, const QString &query, const QString &authUser = QString(), const QString &authToken = QString());
+        //! Set action send AI query request.
+        static QSharedPointer<RCloudToolAction> requestAIQuery(RHttpClient *httpClient, const RCloudAIQueryRequest &aiQueryRequest, const QString &authUser = QString(), const QString &authToken = QString());
 
-        //! Process query response.
-        static QString processQueryResponse(const QByteArray &data);
+        //! Process AI query response.
+        static QString processAIQueryResponse(const QByteArray &data);
 
 };
 

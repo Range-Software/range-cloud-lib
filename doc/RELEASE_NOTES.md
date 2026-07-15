@@ -1,5 +1,21 @@
 ## Version 1.0.3
 
+### Improvements
+
+- `RCloudAIQueryRequest` / `RCloudAIQueryResponse`: new data types carrying an AI
+  query (application, model, query text) and its response
+- `RCloudAction`: new `ai-query` action
+- `RCloudToolAction`: new `AIQuery` action type with `requestAIQuery()` and
+  `processAIQueryResponse()`
+
+### Removals
+
+- Removed the incomplete `query` action, superseded by `ai-query`. It was never
+  handled server-side and always resolved as an unknown action. This drops
+  `RCloudAction::Action::Query`, `RCloudToolAction::Query` with `requestQuery()`
+  and `processQueryResponse()`, and `RCloudClient::requestQuery()` with the
+  `queryResultAvailable()` signal
+
 ### Bug fixes
 
 - Fixed double-delete and lost-wakeup races in HTTP server handlers

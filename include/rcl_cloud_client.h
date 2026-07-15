@@ -133,9 +133,6 @@ class RCloudClient : public QObject
         //! Submit submit report request.
         RToolTask *requestSubmitReport(const RReportRecord &reportRecord, const QString &authUser = QString(), const QString &authToken = QString());
 
-        //! Submit query request.
-        RToolTask *requestQuery(const QString &query, const QString &authUser = QString(), const QString &authToken = QString());
-
     private:
 
         //! Submit task.
@@ -289,9 +286,6 @@ class RCloudClient : public QObject
 
         //! Report was submitted.
         void reportSubmitted(QString response);
-
-        //! Query result is available.
-        void queryResultAvailable(QString response);
 
         //! File was downloaded.
         void statisticsAvailable(QString statistics);
