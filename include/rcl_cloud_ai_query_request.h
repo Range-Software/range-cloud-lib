@@ -4,6 +4,7 @@
 #include <QJsonObject>
 #include <QString>
 
+#include "rcl_ai_query.h"
 #include "rcl_user_info.h"
 
 class RCloudAIQueryRequest
@@ -17,8 +18,8 @@ class RCloudAIQueryRequest
         QString application;
         //! Model name (optional, server default is used when empty).
         QString model;
-        //! Query (prompt) text.
-        QString query;
+        //! Query.
+        RAIQuery query;
 
     private:
 
@@ -57,11 +58,11 @@ class RCloudAIQueryRequest
         //! Set new model name.
         void setModel(const QString &model);
 
-        //! Return const reference to query text.
-        const QString &getQuery() const;
+        //! Return const reference to query.
+        const RAIQuery &getQuery() const;
 
-        //! Set new query text.
-        void setQuery(const QString &query);
+        //! Set new query.
+        void setQuery(const RAIQuery &query);
 
         //! Create request object from Json.
         static RCloudAIQueryRequest fromJson(const QJsonObject &json);

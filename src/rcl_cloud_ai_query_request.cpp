@@ -62,12 +62,12 @@ void RCloudAIQueryRequest::setModel(const QString &model)
     this->model = model;
 }
 
-const QString &RCloudAIQueryRequest::getQuery() const
+const RAIQuery &RCloudAIQueryRequest::getQuery() const
 {
     return this->query;
 }
 
-void RCloudAIQueryRequest::setQuery(const QString &query)
+void RCloudAIQueryRequest::setQuery(const RAIQuery &query)
 {
     this->query = query;
 }
@@ -86,9 +86,9 @@ RCloudAIQueryRequest RCloudAIQueryRequest::fromJson(const QJsonObject &json)
         request.model = v.toString();
     }
 
-    if (const QJsonValue &v = json["query"]; v.isString())
+    if (const QJsonValue &v = json["query"]; v.isObject())
     {
-        request.query = v.toString();
+        request.query = RAIQuery::fromJson(v.toObject());
     }
 
     return request;
@@ -99,7 +99,7 @@ QJsonObject RCloudAIQueryRequest::toJson() const
     QJsonObject json;
     json["application"] = this->application;
     json["model"] = this->model;
-    json["query"] = this->query;
+    json["query"] = this->query.toJson();
 
     return json;
 }
