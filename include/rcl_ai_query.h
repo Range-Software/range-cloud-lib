@@ -16,6 +16,8 @@ class RAIQuery
         QString question;
         //! Reference to a resource file stored in Range Cloud (optional).
         QUuid fileId;
+        //! Description of the referenced file supplied by the client (optional).
+        QString fileDescription;
         //! Additional free-form context supplied by the client (optional).
         QString context;
         //! Preferred response language (optional, e.g. "en", "de").
@@ -51,6 +53,12 @@ class RAIQuery
 
         //! Set new resource file id.
         void setFileId(const QUuid &fileId);
+
+        //! Return const reference to file description.
+        const QString &getFileDescription() const;
+
+        //! Set new file description.
+        void setFileDescription(const QString &fileDescription);
 
         //! Return const reference to context.
         const QString &getContext() const;

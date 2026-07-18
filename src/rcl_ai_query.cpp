@@ -6,6 +6,7 @@ void RAIQuery::_init(const RAIQuery *pAIQuery)
     {
         this->question = pAIQuery->question;
         this->fileId = pAIQuery->fileId;
+        this->fileDescription = pAIQuery->fileDescription;
         this->context = pAIQuery->context;
         this->language = pAIQuery->language;
     }
@@ -50,6 +51,16 @@ const QUuid &RAIQuery::getFileId() const
 void RAIQuery::setFileId(const QUuid &fileId)
 {
     this->fileId = fileId;
+}
+
+const QString &RAIQuery::getFileDescription() const
+{
+    return this->fileDescription;
+}
+
+void RAIQuery::setFileDescription(const QString &fileDescription)
+{
+    this->fileDescription = fileDescription;
 }
 
 const QString &RAIQuery::getContext() const
@@ -106,6 +117,11 @@ RAIQuery RAIQuery::fromJson(const QJsonObject &json)
         aiQuery.fileId = QUuid(v.toString());
     }
 
+    if (const QJsonValue &v = json["fileDescription"]; v.isString())
+    {
+        aiQuery.fileDescription = v.toString();
+    }
+
     if (const QJsonValue &v = json["context"]; v.isString())
     {
         aiQuery.context = v.toString();
@@ -125,6 +141,7 @@ QJsonObject RAIQuery::toJson() const
 
     json["question"] = this->question;
     json["fileId"] = this->fileId.toString(QUuid::WithoutBraces);
+    json["fileDescription"] = this->fileDescription;
     json["context"] = this->context;
     json["language"] = this->language;
 
