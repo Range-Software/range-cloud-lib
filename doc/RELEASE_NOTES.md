@@ -7,6 +7,11 @@
 - `RCloudAction`: new `ai-query` action
 - `RCloudToolAction`: new `AIQuery` action type with `requestAIQuery()` and
   `processAIQueryResponse()`
+- AI queries are processed asynchronously: `ai-query` is acknowledged immediately
+  and the answer is fetched with the new `ai-query-result` action.
+  `RCloudAIQueryResponse` carries the new `id` and `status` (`pending` /
+  `completed`) fields, `RCloudToolAction` the new `AIQueryResult` action type
+  with `requestAIQueryResult()` and `processAIQueryResult()`
 
 ### Removals
 
@@ -19,6 +24,8 @@
 ### Bug fixes
 
 - Fixed double-delete and lost-wakeup races in HTTP server handlers
+- `ai-query` was sent as HTTP GET, silently dropping the request body; it is now
+  sent as POST
 
 ---
 

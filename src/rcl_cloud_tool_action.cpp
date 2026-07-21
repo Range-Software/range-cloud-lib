@@ -130,6 +130,7 @@ void RCloudToolAction::perform()
         case ProcessUpdateAccessMode:
         case SubmitReport:
         case AIQuery:
+        case AIQueryResult:
         {
             if (this->httpClient)
             {
@@ -747,7 +748,19 @@ QSharedPointer<RCloudToolAction> RCloudToolAction::requestAIQuery(RHttpClient *h
     return QSharedPointer<RCloudToolAction>(toolAction);
 }
 
+QSharedPointer<RCloudToolAction> RCloudToolAction::requestAIQueryResult(RHttpClient *httpClient, const QUuid &requestId, const QString &authUser, const QString &authToken)
+{
+    RCloudToolAction *toolAction = new RCloudToolAction(AIQueryResult,httpClient);
+    toolAction->input.setValue<RCloudAction>(RCloudAction(QUuid::createUuid(),authUser,authToken,RCloudAction::Action::AIQueryResult::key,QString(),requestId,QByteArray()));
+    return QSharedPointer<RCloudToolAction>(toolAction);
+}
+
 QString RCloudToolAction::processAIQueryResponse(const QByteArray &data)
 {
     return RCloudAIQueryResponse::fromJson(QJsonDocument::fromJson(data).object()).getResponseMessage();
+}
+
+RCloudAIQueryResponse RCloudToolAction::processAIQueryResult(const QByteArray &data)
+{
+    return RCloudAIQueryResponse::fromJson(QJsonDocument::fromJson(data).object());
 }

@@ -3,14 +3,29 @@
 
 #include <QJsonObject>
 #include <QString>
+#include <QUuid>
 
 #include "rcl_cloud_ai_query_request.h"
 
 class RCloudAIQueryResponse
 {
 
+    public:
+
+        //! Query processing status.
+        enum Status
+        {
+            Unknown = 0,
+            Pending,
+            Completed
+        };
+
     protected:
 
+        //! Query request id (used to fetch the result of a pending query).
+        QUuid id;
+        //! Query processing status.
+        Status status;
         //! AI query response message.
         QString responseMessage;
         //! Original AI query request.
@@ -35,6 +50,18 @@ class RCloudAIQueryResponse
         //! Assignment operator.
         RCloudAIQueryResponse &operator =(const RCloudAIQueryResponse &aiQueryResponse);
 
+        //! Return const reference to query request id.
+        const QUuid &getId() const;
+
+        //! Set new query request id.
+        void setId(const QUuid &id);
+
+        //! Return query processing status.
+        Status getStatus() const;
+
+        //! Set new query processing status.
+        void setStatus(Status status);
+
         //! Return const reference to AI query response message.
         const QString &getResponseMessage() const;
 
@@ -52,6 +79,12 @@ class RCloudAIQueryResponse
 
         //! Create Json from response object.
         QJsonObject toJson() const;
+
+        //! Convert status to string.
+        static QString statusToString(Status status);
+
+        //! Convert string to status.
+        static Status statusFromString(const QString &statusString);
 
 };
 

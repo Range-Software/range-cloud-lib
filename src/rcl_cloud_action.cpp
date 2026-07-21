@@ -125,6 +125,9 @@ const QString RCloudAction::Action::SubmitReport::description = "Submit report t
 const QString RCloudAction::Action::AIQuery::key = "ai-query";
 const QString RCloudAction::Action::AIQuery::description = "Submit an AI query to be answered by an external AI service";
 
+const QString RCloudAction::Action::AIQueryResult::key = "ai-query-result";
+const QString RCloudAction::Action::AIQueryResult::description = "Fetch the result of a previously submitted AI query";
+
 void RCloudAction::_init(const RCloudAction *pCAction)
 {
     if (pCAction)
@@ -270,6 +273,7 @@ QMap<QString, QString> RCloudAction::getActionMap()
     actionMap.insert(Action::ProcessUpdateAccessMode::key,Action::ProcessUpdateAccessMode::description);
     actionMap.insert(Action::SubmitReport::key,Action::SubmitReport::description);
     actionMap.insert(Action::AIQuery::key,Action::AIQuery::description);
+    actionMap.insert(Action::AIQueryResult::key,Action::AIQueryResult::description);
 
     return actionMap;
 }
