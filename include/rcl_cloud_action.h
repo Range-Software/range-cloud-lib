@@ -226,7 +226,12 @@ class RCloudAction
                 static const QString key;
                 static const QString description;
             };
-            struct Query
+            struct AIQuery
+            {
+                static const QString key;
+                static const QString description;
+            };
+            struct AIQueryResult
             {
                 static const QString key;
                 static const QString description;

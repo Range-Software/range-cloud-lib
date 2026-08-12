@@ -401,11 +401,11 @@ void RHttpClient::onSslErrors(const QList<QSslError> &errors)
     R_LOG_TRACE_IN;
     foreach (QSslError sslError, errors)
     {
-        RLogger::error("SSL error: %s (%s).\n%s\n",
+        RLogger::error("SSL error: %s (%s).\n",
                        sslError.errorString().toUtf8().constData(),
-                       sslError.certificate().subjectDisplayName().toUtf8().constData(),
+                       sslError.certificate().subjectDisplayName().toUtf8().constData());
+        RLogger::debug("Certificate: %s\n",
                        RTlsTrustStore::toText(sslError.certificate()).toUtf8().constData());
-
     }
     R_LOG_TRACE_OUT;
 }

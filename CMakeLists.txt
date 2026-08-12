@@ -6,9 +6,12 @@ qt_add_library(range-cloud-lib
         src/rcl_access_mode.cpp
         src/rcl_access_owner.cpp
         src/rcl_access_rights.cpp
+        src/rcl_ai_query.cpp
         src/rcl_auth_token.cpp
         src/rcl_cloud_action.cpp
         src/rcl_cloud_action_info.cpp
+        src/rcl_cloud_ai_query_request.cpp
+        src/rcl_cloud_ai_query_response.cpp
         src/rcl_cloud_client.cpp
         src/rcl_cloud_process_info.cpp
         src/rcl_cloud_process_request.cpp
@@ -43,11 +46,14 @@ qt_add_library(range-cloud-lib
         include/rcl_access_mode.h
         include/rcl_access_owner.h
         include/rcl_access_rights.h
+        include/rcl_ai_query.h
         include/rcl_argument_option.h
         include/rcl_auth_token.h
         include/rcl_auth_token_validator.h
         include/rcl_cloud_action.h
         include/rcl_cloud_action_info.h
+        include/rcl_cloud_ai_query_request.h
+        include/rcl_cloud_ai_query_response.h
         include/rcl_cloud_client.h
         include/rcl_cloud_process_info.h
         include/rcl_cloud_process_request.h
