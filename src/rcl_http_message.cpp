@@ -165,7 +165,8 @@ QHttpServerRequest::Method RHttpMessage::findMethodForAction(const QString &acti
              actionKey == RCloudAction::Action::ActionUpdateAccessMode::key ||
              actionKey == RCloudAction::Action::ProcessUpdateAccessOwner::key ||
              actionKey == RCloudAction::Action::ProcessUpdateAccessMode::key ||
-             actionKey == RCloudAction::Action::SubmitReport::key)
+             actionKey == RCloudAction::Action::SubmitReport::key ||
+             actionKey == RCloudAction::Action::AIQuery::key)
     {
         return QHttpServerRequest::Method::Post;
     }

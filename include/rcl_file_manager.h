@@ -73,6 +73,10 @@ class RFileManager : public QObject
         //! Return true if file manager is running.
         bool isActive() const;
 
+        //! Find remote file matching given local file name.
+        //! Empty file info is returned if no such file is being synced.
+        RFileInfo findRemoteFile(const QString &fileName) const;
+
         //! Start file manager.
         void start(uint remoteRefreshTimeout);
 

@@ -79,6 +79,22 @@ bool RFileManager::isActive() const
     return this->isRunning;
 }
 
+RFileInfo RFileManager::findRemoteFile(const QString &fileName) const
+{
+    R_LOG_TRACE_IN;
+    // Remote files are matched the same way as in compareFileLists.
+    QString userName = RTlsTrustStore::findCN(this->cloudClient->getHttpClientSettings().getTlsKeyStore().getCertificateFile());
+
+    for (const RFileInfo &remoteFileInfo : std::as_const(this->remoteFiles))
+    {
+        if (remoteFileInfo.getPath() == fileName && remoteFileInfo.getAccessRights().getOwner().getUser() == userName)
+        {
+            R_LOG_TRACE_RETURN(remoteFileInfo);
+        }
+    }
+    R_LOG_TRACE_RETURN(RFileInfo());
+}
+
 void RFileManager::start(uint remoteRefreshTimeout)
 {
     RLogger::info("[%s] Start remote refresh timer with timeout %lu [ms]\n",
