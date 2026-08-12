@@ -2,21 +2,21 @@
 
 ### Improvements
 
-- `RAIQuery`: new data type carrying the question asked by the user together with
-  optional supporting information - a referenced Cloud file (`fileId` and
-  `fileDescription`), free-form `context` and the preferred response `language`
-- `RCloudAIQueryRequest` / `RCloudAIQueryResponse`: new data types carrying an AI
-  query (application, model, query) and its response (`id`, `status`, response
+- New AI query data types: `RAIQuery` (the user's `question` plus an optional
+  referenced Cloud file `fileId` / `fileDescription`, free-form `context` and
+  preferred response `language`), wrapped by `RCloudAIQueryRequest` (application,
+  model, query) and answered by `RCloudAIQueryResponse` (`id`, `status`, response
   message)
 - AI queries are processed asynchronously: the new `ai-query` action is acknowledged
   immediately and the answer is fetched with the new `ai-query-result` action,
-  repeated until the query status turns from `pending` to `completed`
-- `RCloudAction`: new `ai-query` and `ai-query-result` actions. `RCloudToolAction`:
-  new `AIQuery` and `AIQueryResult` action types with `requestAIQuery()` /
-  `processAIQueryResponse()` and `requestAIQueryResult()` / `processAIQueryResult()`
-- `RCloudClient`: new `requestAIQuery()` and `requestAIQueryResult()` requests
-  reporting the received response through the `aiQueryResponseAvailable()` and
-  `aiQueryResultAvailable()` signals
+  repeated until `status` turns from `pending` to `completed`
+- New client/action surface for AI queries: `RCloudAction` gains the `ai-query` and
+  `ai-query-result` actions; `RCloudToolAction` the `AIQuery` / `AIQueryResult` types
+  (`requestAIQuery()` / `processAIQueryResponse()`, `requestAIQueryResult()` /
+  `processAIQueryResult()`); `RCloudClient` the `requestAIQuery()` and
+  `requestAIQueryResult()` requests, reporting through the `aiQueryResponseAvailable()`
+  and `aiQueryResultAvailable()` signals
+- `RHttpClient`: added support for the HTTP `DELETE` method
 - `RFileManager`: new `findRemoteFile()` returning the file info of a synchronized
   remote file matching given local file name. File name and ownership are matched
   the same way as when local and remote file lists are compared. Already known
