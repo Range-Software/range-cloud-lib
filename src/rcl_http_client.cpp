@@ -466,6 +466,11 @@ void RHttpClient::onRequestAvailable(const RHttpMessage &httpMessageRequest)
         R_LOG_TRACE_MESSAGE("HTTP POST");
         this->networkReply = this->networkManager->post(networkRequest,httpMessageRequest.getBody());
     }
+    else if (httpMessageRequest.getMethod() == QHttpServerRequest::Method::Delete)
+    {
+        R_LOG_TRACE_MESSAGE("HTTP DELETE");
+        this->networkReply = this->networkManager->deleteResource(networkRequest);
+    }
     else
     {
         RLogger::error("HttpClient: Unsupported HTTP method \"%s\".\n", RHttpMessage::httpMethodToString(httpMessageRequest.getMethod()).toUtf8().constData());
