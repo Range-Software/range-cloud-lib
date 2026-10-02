@@ -122,17 +122,12 @@ RHttpServer::RHttpServer(Type type, const RHttpServerSettings &httpServerSetting
     this->pSslServer = new QSslServer(this);
     this->pHttpServer = new QHttpServer(this);
 
-#if QT_VERSION > QT_VERSION_CHECK(6, 9, 0)
     QHttpServerConfiguration httpServerConfiguration = this->pHttpServer->configuration();
     httpServerConfiguration.setRateLimitPerSecond(this->httpServerSettings.getRateLimitPerSecond());
     httpServerConfiguration.setMaximumBodySize(httpServerSettings.getMaxBodySize());
+    httpServerConfiguration.setMaximumConnections(httpServerSettings.getMaxConnections());
+    httpServerConfiguration.setMaximumConnectionsPerHost(httpServerSettings.getMaxConnectionsPerHost());
     this->pHttpServer->setConfiguration(httpServerConfiguration);
-#else
-    RLogger::warning("[%s] Rate limiting is not available in Qt %s (requires Qt 6.10+). "
-                    "Server will accept unlimited requests per second.\n",
-                    this->getServiceName().toUtf8().constData(),
-                    qVersion());
-#endif
 
     this->buildApiRoutes();
 
@@ -167,6 +162,10 @@ void RHttpServer::start()
             throw RError(RError::Application,R_ERROR_REF,"HTTP Server failed to listen on a port \"%u\".",this->pSslServer->serverPort());
         }
         RLogger::info("[%s] HTTP Server is listening on a port \"%u\".\n",this->getServiceName().toUtf8().constData(),this->pSslServer->serverPort());
+        RLogger::info("[%s] Connection limits: max connections = %u, max connections per host = %u\n",
+                      this->getServiceName().toUtf8().constData(),
+                      this->httpServerSettings.getMaxConnections(),
+                      this->httpServerSettings.getMaxConnectionsPerHost());
 
         // Start cleanup timer
         this->pCleanupTimer->start();

@@ -15,6 +15,8 @@ class RHttpServerSettings : public RHttpSettings
     static quint32 constexpr defaultHandlerCleanupIntervalMs = 60000;
     static quint32 constexpr defaultMaxStaleHandlerAgeMs = 120000;
     static qint64 constexpr defaultMaxBodySize = 104857600;
+    static quint32 constexpr defaultMaxConnections = 1000;
+    static quint32 constexpr defaultMaxConnectionsPerHost = 20;
 
     protected:
 
@@ -23,6 +25,8 @@ class RHttpServerSettings : public RHttpSettings
         quint32 handlerCleanupIntervalMs;
         quint32 maxStaleHandlerAgeMs;
         qint64 maxBodySize;
+        quint32 maxConnections;
+        quint32 maxConnectionsPerHost;
 
     protected:
 
@@ -67,12 +71,23 @@ class RHttpServerSettings : public RHttpSettings
         //! Set maximum stale handler age in milliseconds.
         void setMaxStaleHandlerAgeMs(quint32 ageMs);
 
-
         //! Return maximum body size in bytes.
         qint64 getMaxBodySize() const;
 
         //! Set maximum body size in bytes.
         void setMaxBodySize(qint64 maxBodySize);
+
+        //! Return maximum number of simultaneous connections accepted by the server.
+        quint32 getMaxConnections() const;
+
+        //! Set maximum number of simultaneous connections accepted by the server.
+        void setMaxConnections(quint32 maxConnections);
+
+        //! Return maximum number of simultaneous connections per host (IP) accepted by the server.
+        quint32 getMaxConnectionsPerHost() const;
+
+        //! Set maximum number of simultaneous connections per host (IP) accepted by the server.
+        void setMaxConnectionsPerHost(quint32 maxConnectionsPerHost);
 
         //! Validate settings and return true if valid.
         bool validate(QString *errorMessage = nullptr) const;

@@ -1,3 +1,19 @@
+## Version 1.1.1
+
+### Improvements
+
+- `RHttpServerSettings`: new `maxConnections` and `maxConnectionsPerHost` settings
+  (`getMaxConnections()` / `setMaxConnections()`, `getMaxConnectionsPerHost()` /
+  `setMaxConnectionsPerHost()`), defaults 1000 and 20
+- `RHttpServer` enforces the connection limits through `QHttpServerConfiguration`
+  and logs them on start
+- `RHttpServerSettings::validate()` rejects `maxConnectionsPerHost` greater than
+  `maxConnections`
+- Rate limiting, maximum body size and connection limits are always applied; the
+  fallback for Qt older than 6.10 was removed
+
+---
+
 ## Version 1.1.0
 
 ### Improvements

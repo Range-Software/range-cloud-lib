@@ -11,6 +11,8 @@ void RHttpServerSettings::_init(const RHttpServerSettings *pHttpServerSettings)
         this->handlerCleanupIntervalMs = pHttpServerSettings->handlerCleanupIntervalMs;
         this->maxStaleHandlerAgeMs = pHttpServerSettings->maxStaleHandlerAgeMs;
         this->maxBodySize = pHttpServerSettings->maxBodySize;
+        this->maxConnections = pHttpServerSettings->maxConnections;
+        this->maxConnectionsPerHost = pHttpServerSettings->maxConnectionsPerHost;
     }
     else
     {
@@ -19,6 +21,8 @@ void RHttpServerSettings::_init(const RHttpServerSettings *pHttpServerSettings)
         this->handlerCleanupIntervalMs = defaultHandlerCleanupIntervalMs;
         this->maxStaleHandlerAgeMs = defaultMaxStaleHandlerAgeMs;
         this->maxBodySize = defaultMaxBodySize;
+        this->maxConnections = defaultMaxConnections;
+        this->maxConnectionsPerHost = defaultMaxConnectionsPerHost;
     }
 }
 
@@ -93,6 +97,26 @@ qint64 RHttpServerSettings::getMaxBodySize() const
 void RHttpServerSettings::setMaxBodySize(qint64 maxBodySize)
 {
     this->maxBodySize = maxBodySize;
+}
+
+quint32 RHttpServerSettings::getMaxConnections() const
+{
+    return this->maxConnections;
+}
+
+void RHttpServerSettings::setMaxConnections(quint32 maxConnections)
+{
+    this->maxConnections = maxConnections;
+}
+
+quint32 RHttpServerSettings::getMaxConnectionsPerHost() const
+{
+    return this->maxConnectionsPerHost;
+}
+
+void RHttpServerSettings::setMaxConnectionsPerHost(quint32 maxConnectionsPerHost)
+{
+    this->maxConnectionsPerHost = maxConnectionsPerHost;
 }
 
 bool RHttpServerSettings::validate(QString *errorMessage) const
@@ -178,6 +202,16 @@ bool RHttpServerSettings::validate(QString *errorMessage) const
         if (errorMessage)
         {
             *errorMessage = "Invalid configuration: maxStaleHandlerAgeMs must be >= responseTimeoutMs";
+        }
+        return false;
+    }
+
+    // Validate connection limits
+    if (this->maxConnections > 0 && this->maxConnectionsPerHost > this->maxConnections)
+    {
+        if (errorMessage)
+        {
+            *errorMessage = "Invalid configuration: maxConnectionsPerHost must be <= maxConnections";
         }
         return false;
     }
