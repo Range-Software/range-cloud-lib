@@ -11,6 +11,8 @@
   `maxConnections`
 - Rate limiting, maximum body size and connection limits are always applied; the
   fallback for Qt older than 6.10 was removed
+- Translations to Czech, German, Spanish, French, Italian, Polish and Ukrainian
+  added in addition to English and Slovak
 
 ---
 
