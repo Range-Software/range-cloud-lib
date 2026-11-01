@@ -37,6 +37,7 @@ qt_add_library(range-cloud-lib
         src/rcl_network_message.cpp
         src/rcl_open_ssl_tool.cpp
         src/rcl_open_ssl_tool_settings.cpp
+        src/rcl_pkcs.cpp
         src/rcl_report_record.cpp
         src/rcl_software_manager.cpp
         src/rcl_software_manager_settings.cpp
@@ -78,6 +79,7 @@ qt_add_library(range-cloud-lib
         include/rcl_http_settings.h
         include/rcl_network_message.h
         include/rcl_open_ssl_tool.h
+        include/rcl_pkcs.h
         include/rcl_open_ssl_tool_settings.h
         include/rcl_report_record.h
         include/rcl_software_manager.h
@@ -111,6 +113,18 @@ target_link_libraries(range-cloud-lib
 )
 
 target_link_libraries(range-cloud-lib PRIVATE Qt6::Core)
+
+# On macOS generate keys and CSRs with Security framework instead of the openssl tool
+option(RANGE_NATIVE_KEY_TOOL "Generate keys and CSRs with Security framework on macOS" ON)
+if(APPLE AND RANGE_NATIVE_KEY_TOOL)
+    target_sources(range-cloud-lib
+        PRIVATE
+            src/rcl_security_key_tool.cpp
+            include/rcl_security_key_tool.h
+    )
+    target_compile_definitions(range-cloud-lib PRIVATE RANGE_NATIVE_KEY_TOOL)
+    target_link_libraries(range-cloud-lib PRIVATE "-framework Security" "-framework CoreFoundation")
+endif()
 
 qt_add_translations(range-cloud-lib
     TS_FILES

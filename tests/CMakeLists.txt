@@ -14,6 +14,10 @@ set(range_cloud_lib_tests
     tst_auth_token
 )
 
+if(APPLE AND RANGE_NATIVE_KEY_TOOL)
+    list(APPEND range_cloud_lib_tests tst_security_key_tool)
+endif()
+
 foreach(test_name IN LISTS range_cloud_lib_tests)
     qt_add_executable(${test_name} ${test_name}.cpp)
     target_link_libraries(${test_name}

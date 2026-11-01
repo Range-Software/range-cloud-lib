@@ -1,3 +1,37 @@
+## Version 1.3.0
+
+### Improvements
+
+#### Native key and CSR generation on macOS
+
+- `RSecurityKeyTool` generates private keys and certificate signing requests with
+  the Apple Security framework instead of the `openssl` tool. RSA 4096 keys are
+  created with `SecKeyCreateRandomKey` and stored as unencrypted PKCS#8 PEM files,
+  the same format `openssl genpkey` writes, readable only by the owner. CSRs are
+  signed with `SecKeyCreateSignature` (sha256WithRSAEncryption) and are byte for
+  byte identical to those of `openssl req` for the same key and subject. Keys
+  generated earlier by `openssl` (PKCS#8 or PKCS#1 PEM) can be used as well
+- `RSecurityKeyTool` also writes the text form of a private key, identical to
+  `openssl pkey -text -noout`, and a text summary of certificates built from
+  `QSslCertificate`, which works with every Qt TLS backend
+- `ROpenSslTool` passes key generation, CSR generation and the text output to
+  `RSecurityKeyTool` when built with the `RANGE_NATIVE_KEY_TOOL` CMake option,
+  which is on by default and only applies to macOS. The openssl configuration
+  file is not needed in that case. `ROpenSslTool::isToolRequired()` tells whether
+  the `openssl` tool is used
+- `RPkcs`: DER and PEM encoding of RSA keys (PKCS#1, PKCS#8) and certificate
+  signing requests (PKCS#10), independent of the cryptographic library
+- Unit test `tst_security_key_tool` checks the generated files against Qt and the
+  `openssl` tool
+
+### Bug fixes
+
+- Subject fields with characters outside ASCII, such as `Žilina`, were stored
+  in the CSR in a mangled form (`Å½ilina`), as `openssl req` was not given
+  `-utf8`. CSRs generated with `RSecurityKeyTool` store them correctly
+
+---
+
 ## Version 1.2.0
 
 ### Improvements

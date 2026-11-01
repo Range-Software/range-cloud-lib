@@ -59,6 +59,9 @@ class ROpenSslTool : public QObject
         //! Constructor.
         explicit ROpenSslTool(const ROpenSslToolSettings &openSslToolSettings, QObject *parent = nullptr);
 
+        //! Return true if the openssl tool and its configuration are used (false when built with native key tool).
+        static bool isToolRequired();
+
         //! Generate key.
         void generateKey(const QString &keyPath, const QString &keyPassword) const;
 

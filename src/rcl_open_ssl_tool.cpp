@@ -7,6 +7,10 @@
 #include "rcl_tls_trust_store.h"
 #include "rcl_open_ssl_tool.h"
 
+#ifdef RANGE_NATIVE_KEY_TOOL
+#include "rcl_security_key_tool.h"
+#endif
+
 const QString ROpenSslTool::CertificateSubject::Country::key = "C";
 const QString ROpenSslTool::CertificateSubject::Country::name = "Country";
 const QString ROpenSslTool::CertificateSubject::State::key = "ST";
@@ -25,8 +29,24 @@ ROpenSslTool::ROpenSslTool(const ROpenSslToolSettings &openSslToolSettings, QObj
     , openSslToolSettings{openSslToolSettings}
 {}
 
+bool ROpenSslTool::isToolRequired()
+{
+#ifdef RANGE_NATIVE_KEY_TOOL
+    return false;
+#else
+    return true;
+#endif
+}
+
 void ROpenSslTool::generateKey(const QString &keyPath, const QString &keyPassword) const
 {
+#ifdef RANGE_NATIVE_KEY_TOOL
+    // Same as 'openssl genpkey' without '-cipher', the key is not encrypted with the password
+    Q_UNUSED(keyPassword);
+    RSecurityKeyTool::generateKey(keyPath);
+    return;
+#endif
+
     QProcess process;
 
     QStringList opensslArgs =
@@ -62,6 +82,12 @@ void ROpenSslTool::generateKey(const QString &keyPath, const QString &keyPasswor
 
 void ROpenSslTool::generateCsr(const QString &keyPath, const QString &keyPassword, const QMap<QString, QString> &subjectMap, const QString &csrPath) const
 {
+#ifdef RANGE_NATIVE_KEY_TOOL
+    Q_UNUSED(keyPassword);
+    RSecurityKeyTool::generateCsr(keyPath,subjectMap,csrPath);
+    return;
+#endif
+
     if (!QFileInfo::exists(this->openSslToolSettings.getOpenSslCnfPath()))
     {
         throw RError(RError::Application,R_ERROR_REF,"OpenSSL configuration file \'%s\' does not exist.",this->openSslToolSettings.getOpenSslCnfPath().toUtf8().constData());
@@ -127,6 +153,12 @@ void ROpenSslTool::generateCsr(const QString &keyPath, const QString &keyPasswor
 
 void ROpenSslTool::outputKeyAsText(const QString &keyPath, const QString &keyPassword, const QString &textPath) const
 {
+#ifdef RANGE_NATIVE_KEY_TOOL
+    Q_UNUSED(keyPassword);
+    RSecurityKeyTool::outputKeyAsText(keyPath,textPath);
+    return;
+#endif
+
     QProcess process;
 
     QStringList opensslArgs =
@@ -163,6 +195,11 @@ void ROpenSslTool::outputKeyAsText(const QString &keyPath, const QString &keyPas
 
 void ROpenSslTool::outputCertificateAsText(const QString &certPath, const QString &textPath) const
 {
+#ifdef RANGE_NATIVE_KEY_TOOL
+    RSecurityKeyTool::outputCertificateAsText(certPath,textPath);
+    return;
+#endif
+
     QProcess process;
 
     QStringList opensslArgs =
