@@ -7,6 +7,9 @@
 #include <QMutex>
 #include <QObject>
 #include <QSslCertificate>
+#include <QSslConfiguration>
+
+#include <optional>
 
 #include "rcl_http_client_settings.h"
 #include "rcl_http_message.h"
@@ -53,6 +56,10 @@ class RHttpClient : public QObject
 
         //! Mutex locking pending request.
         QMutex requestMutex;
+
+        //! TLS configuration built from the settings; loading certificates and
+        //! keys is expensive, so it is built once and reset when settings change.
+        std::optional<QSslConfiguration> sslConfiguration;
 
     public:
 

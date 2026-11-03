@@ -13,6 +13,7 @@ void RHttpServerSettings::_init(const RHttpServerSettings *pHttpServerSettings)
         this->maxBodySize = pHttpServerSettings->maxBodySize;
         this->maxConnections = pHttpServerSettings->maxConnections;
         this->maxConnectionsPerHost = pHttpServerSettings->maxConnectionsPerHost;
+        this->maxRequestThreads = pHttpServerSettings->maxRequestThreads;
     }
     else
     {
@@ -23,6 +24,7 @@ void RHttpServerSettings::_init(const RHttpServerSettings *pHttpServerSettings)
         this->maxBodySize = defaultMaxBodySize;
         this->maxConnections = defaultMaxConnections;
         this->maxConnectionsPerHost = defaultMaxConnectionsPerHost;
+        this->maxRequestThreads = defaultMaxRequestThreads;
     }
 }
 
@@ -119,6 +121,16 @@ void RHttpServerSettings::setMaxConnectionsPerHost(quint32 maxConnectionsPerHost
     this->maxConnectionsPerHost = maxConnectionsPerHost;
 }
 
+quint32 RHttpServerSettings::getMaxRequestThreads() const
+{
+    return this->maxRequestThreads;
+}
+
+void RHttpServerSettings::setMaxRequestThreads(quint32 maxRequestThreads)
+{
+    this->maxRequestThreads = maxRequestThreads;
+}
+
 bool RHttpServerSettings::validate(QString *errorMessage) const
 {
     // Validate port
@@ -207,6 +219,15 @@ bool RHttpServerSettings::validate(QString *errorMessage) const
     }
 
     // Validate connection limits
+    if (this->maxRequestThreads == 0)
+    {
+        if (errorMessage)
+        {
+            *errorMessage = "Invalid configuration: maxRequestThreads must be greater than 0";
+        }
+        return false;
+    }
+
     if (this->maxConnections > 0 && this->maxConnectionsPerHost > this->maxConnections)
     {
         if (errorMessage)

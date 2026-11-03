@@ -120,6 +120,9 @@ RHttpServer::RHttpServer(Type type, const RHttpServerSettings &httpServerSetting
                      validationError.toUtf8().constData());
     }
 
+    this->requestThreadPool.setMaxThreadCount(int(this->httpServerSettings.getMaxRequestThreads()));
+    this->requestThreadPool.setObjectName(this->getServiceName() + "Requests");
+
     this->pSslServer = new QSslServer(this);
     this->pHttpServer = new QHttpServer(this);
 
@@ -227,6 +230,13 @@ void RHttpServer::stop()
                           this->getServiceName().toUtf8().constData(),
                           int(this->serverHandlers.size()));
         }
+    }
+
+    // Request threads use this object; let them finish before it can be destroyed.
+    if (!this->requestThreadPool.waitForDone(10000))
+    {
+        RLogger::warning("[%s] Some request threads are still running.\n",
+                         this->getServiceName().toUtf8().constData());
     }
 
     foreach (QTcpServer *tcpServer, this->pHttpServer->servers())
@@ -497,10 +507,12 @@ void RHttpServer::buildApiRoute(const QString &actionKey)
             }
             else
             {
-                RLogger::warning("[%s] Failed to authenticate: user = \"%s\" token = \"%s\"\n",
+                // Never log the token itself: a valid one would be usable by
+                // anyone with read access to the log.
+                RLogger::warning("[%s] Failed to authenticate: user = \"%s\" (token length = %d)\n",
                                  this->getServiceName().toUtf8().constData(),
                                  authUser.toUtf8().constData(),
-                                 authToken.toUtf8().constData());
+                                 int(authToken.size()));
             }
         }
         else if (this->type == RHttpServer::Private)
@@ -516,7 +528,7 @@ void RHttpServer::buildApiRoute(const QString &actionKey)
                       fromAddress.toUtf8().constData(),
                       request.url().toDisplayString().toUtf8().constData());
 
-        return QtConcurrent::run([=, this](const QByteArray body) {
+        return QtConcurrent::run(&this->requestThreadPool,[=, this](const QByteArray body) {
             return this->processRequest(actionKey,userName,fromAddress,resourceName,id,body);
         },request.body());
     });

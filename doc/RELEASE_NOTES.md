@@ -24,16 +24,41 @@
 - Unit test `tst_security_key_tool` checks the generated files against Qt and the
   `openssl` tool
 
+#### RHttpServer
+
+- Requests are processed in the server's own thread pool instead of the global
+  one, so long-running jobs in the global pool can no longer starve request
+  processing. Its size is set with the new `RHttpServerSettings` setting
+  `maxRequestThreads` (`getMaxRequestThreads()` / `setMaxRequestThreads()`,
+  default 64; `validate()` rejects 0)
+
+#### RHttpClient
+
+- `sendRequest()` returns as soon as the reply arrives. Previously it polled
+  with a one-second sleep, adding up to a second to every request
+- Connections (and TLS sessions) are kept open and re-used between requests.
+  Previously the connection cache was cleared before every request; now it is
+  cleared only when the settings change
+- The TLS configuration (system CA certificates, client certificate and key) is
+  built once instead of being loaded and parsed for every request, and is
+  rebuilt when the settings change. Certificate or key files replaced on disk
+  therefore take effect only after `setHttpClientSettings()` is called or a new
+  client is created, and the certificate expiry warning is logged once per
+  configuration instead of on every request
+
 ### Bug fixes
 
 - Subject fields with characters outside ASCII, such as `Žilina`, were stored
   in the CSR in a mangled form (`Å½ilina`), as `openssl req` was not given
   `-utf8`. CSRs generated with `RSecurityKeyTool` store them correctly
-- `RHttpServer::stop()` now answers every request still waiting for a reply
-  ("Server is shutting down") and refuses new ones, so request threads finish
-  promptly and the server can be destroyed safely once the thread pool is
-  drained. Previously request threads could still use the server object after
-  it had been destroyed
+- `RHttpServer::stop()` answers every request still waiting for a reply
+  ("Server is shutting down"), refuses new ones and waits for the request
+  threads to finish. Previously request threads could still use the server
+  object after it had been destroyed
+- `RHttpServer` no longer writes the authentication token to the log when
+  authentication fails; only its length is logged
+- `RHttpClient::sendRequest()` no longer waits forever when given an
+  unsupported HTTP method; it returns an `InvalidInput` error
 
 ---
 
