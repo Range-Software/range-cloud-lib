@@ -106,6 +106,7 @@ RHttpServer::RHttpServer(Type type, const RHttpServerSettings &httpServerSetting
     , pHttpServer{nullptr}
     , pCleanupTimer{nullptr}
     , pAuthTokenValidator{nullptr}
+    , stopping{false}
 {
     R_LOG_TRACE_IN;
 
@@ -167,6 +168,11 @@ void RHttpServer::start()
                       this->httpServerSettings.getMaxConnections(),
                       this->httpServerSettings.getMaxConnectionsPerHost());
 
+        {
+            QMutexLocker locker(&this->syncMutex);
+            this->stopping = false;
+        }
+
         // Start cleanup timer
         this->pCleanupTimer->start();
         RLogger::info("[%s] Handler cleanup timer started (interval: %u ms, max age: %u ms)\n",
@@ -199,6 +205,28 @@ void RHttpServer::stop()
     if (this->pCleanupTimer)
     {
         this->pCleanupTimer->stop();
+    }
+
+    // Refuse new requests and wake every request thread still waiting for a
+    // reply, so worker threads in processRequest() finish promptly and the
+    // server object can be destroyed safely once the thread pool is drained.
+    {
+        QMutexLocker locker(&this->syncMutex);
+        this->stopping = true;
+
+        RHttpMessage stopResponse;
+        stopResponse.setErrorType(RError::Application);
+        stopResponse.setBody("Server is shutting down");
+        for (RHttpServerHandler *handler : std::as_const(this->serverHandlers))
+        {
+            handler->sendReply(stopResponse);
+        }
+        if (!this->serverHandlers.isEmpty())
+        {
+            RLogger::info("[%s] Released %d pending request(s).\n",
+                          this->getServiceName().toUtf8().constData(),
+                          int(this->serverHandlers.size()));
+        }
     }
 
     foreach (QTcpServer *tcpServer, this->pHttpServer->servers())
@@ -525,7 +553,11 @@ QHttpServerResponse RHttpServer::processRequest(
     message.setFrom(fromAddress);
 
     std::unique_ptr<RHttpServerHandler> serverHandler(new RHttpServerHandler);
-    this->serverHandlerAdd(serverHandler.get());
+    if (!this->serverHandlerAdd(serverHandler.get()))
+    {
+        QHttpServerResponse response(QByteArray("Server is shutting down"),RHttpMessage::errorTypeToStatusCode(RError::Application));
+        return response;
+    }
     message.setHandlerId(serverHandler->getId());
     RLogger::debug("[%s] Received message with payload size = \"%ld\"\n",this->getServiceName().toUtf8().constData(),message.getBody().size());
 
@@ -575,17 +607,23 @@ QString RHttpServer::getServiceName() const
     }
 }
 
-void RHttpServer::serverHandlerAdd(RHttpServerHandler *serverHandler)
+bool RHttpServer::serverHandlerAdd(RHttpServerHandler *serverHandler)
 {
     R_LOG_TRACE_IN;
     QMutexLocker locker(&this->syncMutex);
+    if (this->stopping)
+    {
+        RLogger::warning("[%s] Refusing request: server is shutting down.\n",
+                         this->getServiceName().toUtf8().constData());
+        R_LOG_TRACE_RETURN(false);
+    }
     this->serverHandlers.insert(serverHandler->getId(),serverHandler);
     this->handlerCreationTimes.insert(serverHandler->getId(), QDateTime::currentDateTime());
     RLogger::debug("[%s] Added handler %s (total handlers: %d)\n",
                   this->getServiceName().toUtf8().constData(),
                   serverHandler->getId().toString(QUuid::WithoutBraces).toUtf8().constData(),
                   this->serverHandlers.size());
-    R_LOG_TRACE_OUT;
+    R_LOG_TRACE_RETURN(true);
 }
 
 void RHttpServer::serverHandlerRemove(const QUuid &serverHandlerId)

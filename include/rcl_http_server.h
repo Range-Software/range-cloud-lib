@@ -53,6 +53,8 @@ class RHttpServer : public QObject
         QTimer *pCleanupTimer;
         //! Authentication token validator.
         RAuthTokenValidator *pAuthTokenValidator;
+        //! Set by stop(); no new request handlers are accepted afterwards (guarded by syncMutex).
+        bool stopping;
 
     public:
 
@@ -109,7 +111,8 @@ class RHttpServer : public QObject
 
     private slots:
 
-        void serverHandlerAdd(RHttpServerHandler *serverHandler);
+        //! Register handler. Returns false (and does not register) once the server is stopping.
+        bool serverHandlerAdd(RHttpServerHandler *serverHandler);
 
         void serverHandlerRemove(const QUuid &serverHandlerId);
 

@@ -29,6 +29,11 @@
 - Subject fields with characters outside ASCII, such as `Žilina`, were stored
   in the CSR in a mangled form (`Å½ilina`), as `openssl req` was not given
   `-utf8`. CSRs generated with `RSecurityKeyTool` store them correctly
+- `RHttpServer::stop()` now answers every request still waiting for a reply
+  ("Server is shutting down") and refuses new ones, so request threads finish
+  promptly and the server can be destroyed safely once the thread pool is
+  drained. Previously request threads could still use the server object after
+  it had been destroyed
 
 ---
 
