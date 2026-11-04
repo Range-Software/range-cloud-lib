@@ -101,6 +101,16 @@ void RCloudSessionInfo::setHostTrustStore(const RTlsTrustStore &trustStore)
     this->host.trustStore = trustStore;
 }
 
+RHttpClientSettings::Verification RCloudSessionInfo::getVerification() const
+{
+    return this->host.verification;
+}
+
+void RCloudSessionInfo::setVerification(RHttpClientSettings::Verification verification)
+{
+    this->host.verification = verification;
+}
+
 const RTlsKeyStore &RCloudSessionInfo::getClientKeyStore() const
 {
     return this->client.keyStore;
@@ -143,6 +153,10 @@ RCloudSessionInfo RCloudSessionInfo::fromJson(const QJsonObject &json)
         {
             session.host.trustStore = RTlsTrustStore::fromJson(v.toObject());
         }
+        if (const QJsonValue &v = hostJson["verification"]; v.isString())
+        {
+            session.host.verification = RHttpClientSettings::verificationFromKey(v.toString());
+        }
     }
 
     if (const QJsonValue &v = json["client"]; v.isObject())
@@ -169,6 +183,7 @@ QJsonObject RCloudSessionInfo::toJson() const
     jsonHost["privatePort"] = this->host.privatePort;
     jsonHost["timeout"] = int(this->host.timeout);
     jsonHost["trustStore"] = this->host.trustStore.toJson();
+    jsonHost["verification"] = RHttpClientSettings::verificationToKey(this->host.verification);
 
     json["host"] = jsonHost;
 

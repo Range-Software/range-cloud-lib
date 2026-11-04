@@ -9,6 +9,19 @@
 class RHttpClientSettings : public RHttpSettings
 {
 
+    public:
+
+        //! Host certificate verification.
+        enum Verification
+        {
+            //! Verify certificate chain and host name.
+            FullVerification = 0,
+            //! Verify certificate chain only, skip host name verification.
+            CertificateVerification,
+            //! No verification.
+            NoVerification
+        };
+
     protected:
 
         //! Internal initialization function.
@@ -22,6 +35,8 @@ class RHttpClientSettings : public RHttpSettings
         uint timeout;
         //! Proxy type.
         RHttpProxySettings proxySettings;
+        //! Host certificate verification.
+        Verification verification;
 
     public:
 
@@ -58,6 +73,18 @@ class RHttpClientSettings : public RHttpSettings
 
         //! Set new proxy settings.
         void setProxySettings(const RHttpProxySettings &proxySettings);
+
+        //! Return host certificate verification.
+        Verification getVerification() const;
+
+        //! Set new host certificate verification.
+        void setVerification(Verification verification);
+
+        //! Return verification key.
+        static QString verificationToKey(Verification verification);
+
+        //! Return verification from key.
+        static Verification verificationFromKey(const QString &key);
 
 };
 

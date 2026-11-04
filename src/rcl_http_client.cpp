@@ -155,8 +155,8 @@ QSslConfiguration RHttpClient::buildSslConfiguration() const
     }
 
     sslConfig.setProtocol(QSsl::TlsV1_2OrLater);
-    // sslConfig.setPeerVerifyMode(QSslSocket::AutoVerifyPeer);
-    sslConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
+    // Peer is verified so that any SSL error aborts the handshake unless it is explicitly ignored in onSslErrors().
+    sslConfig.setPeerVerifyMode(QSslSocket::VerifyPeer);
 
     R_LOG_TRACE_RETURN(sslConfig);
 }
@@ -399,13 +399,45 @@ void RHttpClient::onEncrypted()
 void RHttpClient::onSslErrors(const QList<QSslError> &errors)
 {
     R_LOG_TRACE_IN;
+    RHttpClientSettings::Verification verification = this->httpClientSettings.getVerification();
+    bool ignoreErrors = true;
     foreach (QSslError sslError, errors)
     {
+        if (verification == RHttpClientSettings::NoVerification)
+        {
+            RLogger::warning("SSL error ignored, host certificate verification is disabled: %s (%s).\n",
+                             sslError.errorString().toUtf8().constData(),
+                             sslError.certificate().subjectDisplayName().toUtf8().constData());
+            continue;
+        }
+        if (verification == RHttpClientSettings::CertificateVerification && sslError.error() == QSslError::HostNameMismatch)
+        {
+            RLogger::warning("SSL error ignored, host name verification is disabled: %s (%s).\n",
+                             sslError.errorString().toUtf8().constData(),
+                             sslError.certificate().subjectDisplayName().toUtf8().constData());
+            continue;
+        }
+        // Error is not ignored, connection is not allowed.
+        ignoreErrors = false;
         RLogger::error("SSL error: %s (%s).\n",
                        sslError.errorString().toUtf8().constData(),
                        sslError.certificate().subjectDisplayName().toUtf8().constData());
         RLogger::debug("Certificate: %s\n",
                        RTlsTrustStore::toText(sslError.certificate()).toUtf8().constData());
+    }
+    if (!this->networkReply)
+    {
+        R_LOG_TRACE_OUT;
+        return;
+    }
+    if (ignoreErrors)
+    {
+        this->networkReply->ignoreSslErrors();
+    }
+    else
+    {
+        RLogger::error("Connection to \"%s\" refused, host certificate could not be verified.\n",
+                       this->networkReply->url().host().toUtf8().constData());
     }
     R_LOG_TRACE_OUT;
 }

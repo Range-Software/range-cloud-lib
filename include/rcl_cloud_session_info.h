@@ -4,6 +4,7 @@
 #include <QString>
 #include <QJsonObject>
 
+#include "rcl_http_client_settings.h"
 #include "rcl_tls_key_store.h"
 #include "rcl_tls_trust_store.h"
 
@@ -33,6 +34,8 @@ class RCloudSessionInfo
             uint timeout;
             //! Host or CA trust store.
             RTlsTrustStore trustStore;
+            //! Host certificate verification.
+            RHttpClientSettings::Verification verification = RHttpClientSettings::FullVerification;
         } host;
 
         // Client
@@ -94,6 +97,12 @@ class RCloudSessionInfo
 
         //! Set new host trust store.
         void setHostTrustStore(const RTlsTrustStore &trustStore);
+
+        //! Return host certificate verification.
+        RHttpClientSettings::Verification getVerification() const;
+
+        //! Set new host certificate verification.
+        void setVerification(RHttpClientSettings::Verification verification);
 
         //! Return const reference to client key store.
         const RTlsKeyStore &getClientKeyStore() const;

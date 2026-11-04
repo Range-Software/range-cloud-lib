@@ -24,11 +24,31 @@
 - Unit test `tst_security_key_tool` checks the generated files against Qt and the
   `openssl` tool
 
+#### Host certificate verification
+
+- `RHttpClientSettings::Verification` selects how the host certificate is verified:
+  `FullVerification` (certificate chain and host name, the default),
+  `CertificateVerification` (certificate chain only, host name is not checked) and
+  `NoVerification`. It is set with `RHttpClientSettings::setVerification()` and
+  stored with each Cloud session (`RCloudSessionInfo::setVerification()`) as
+  `"verification": "full" | "certificate" | "none"` in the `host` object. Sessions
+  saved without it use full verification
+- `CertificateVerification` suits a server reached by its IP address whose
+  certificate is issued by a private certificate authority set as the session's
+  host certificate (`RTlsTrustStore`)
+- `RHttpClient` verifies the peer (`QSslSocket::VerifyPeer`). SSL errors which the
+  selected verification does not ignore abort the TLS handshake before any request
+  data is sent, and are logged as errors. Ignored errors are logged as warnings
+
 ### Bug fixes
 
 - Subject fields with characters outside ASCII, such as `Žilina`, were stored
   in the CSR in a mangled form (`Å½ilina`), as `openssl req` was not given
   `-utf8`. CSRs generated with `RSecurityKeyTool` store them correctly
+- `RHttpClient` did not verify the host certificate (`QSslSocket::VerifyNone`).
+  A certificate issued by an untrusted authority or for another host name was
+  accepted, and the reported SSL errors were only logged. Such connections are now
+  refused unless the verification is relaxed
 
 ---
 
