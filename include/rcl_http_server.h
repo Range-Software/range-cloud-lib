@@ -9,6 +9,7 @@
 #include <QUuid>
 #include <QSslSocket>
 #include <QSslServer>
+#include <QThreadPool>
 #include <QTimer>
 #include <QDateTime>
 
@@ -53,6 +54,11 @@ class RHttpServer : public QObject
         QTimer *pCleanupTimer;
         //! Authentication token validator.
         RAuthTokenValidator *pAuthTokenValidator;
+        //! Set by stop(); no new request handlers are accepted afterwards (guarded by syncMutex).
+        bool stopping;
+        //! Threads processing requests. Kept separate from the global pool so
+        //! long-running jobs there cannot starve request processing (and vice versa).
+        QThreadPool requestThreadPool;
 
     public:
 
@@ -109,7 +115,8 @@ class RHttpServer : public QObject
 
     private slots:
 
-        void serverHandlerAdd(RHttpServerHandler *serverHandler);
+        //! Register handler. Returns false (and does not register) once the server is stopping.
+        bool serverHandlerAdd(RHttpServerHandler *serverHandler);
 
         void serverHandlerRemove(const QUuid &serverHandlerId);
 

@@ -17,6 +17,7 @@ class RHttpServerSettings : public RHttpSettings
     static qint64 constexpr defaultMaxBodySize = 104857600;
     static quint32 constexpr defaultMaxConnections = 1000;
     static quint32 constexpr defaultMaxConnectionsPerHost = 20;
+    static quint32 constexpr defaultMaxRequestThreads = 64;
 
     protected:
 
@@ -27,6 +28,7 @@ class RHttpServerSettings : public RHttpSettings
         qint64 maxBodySize;
         quint32 maxConnections;
         quint32 maxConnectionsPerHost;
+        quint32 maxRequestThreads;
 
     protected:
 
@@ -88,6 +90,13 @@ class RHttpServerSettings : public RHttpSettings
 
         //! Set maximum number of simultaneous connections per host (IP) accepted by the server.
         void setMaxConnectionsPerHost(quint32 maxConnectionsPerHost);
+
+        //! Return maximum number of requests processed concurrently. Each one
+        //! occupies a thread of the server's own pool while waiting for its reply.
+        quint32 getMaxRequestThreads() const;
+
+        //! Set maximum number of requests processed concurrently.
+        void setMaxRequestThreads(quint32 maxRequestThreads);
 
         //! Validate settings and return true if valid.
         bool validate(QString *errorMessage = nullptr) const;

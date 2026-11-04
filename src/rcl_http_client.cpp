@@ -4,6 +4,7 @@
 #include <QSslCipher>
 #include <QNetworkProxy>
 #include <QCoreApplication>
+#include <QEventLoop>
 #include <QTimer>
 #include <QDateTime>
 
@@ -43,18 +44,26 @@ void RHttpClient::sendRequest(const RHttpMessage &httpMessageRequest, RHttpMessa
     this->replyMessage = httpMessageRequest;
     this->responseBytes.clear();
 
-    this->networkManager->clearConnectionCache();
-
+    // Connections (and TLS sessions) are kept alive and re-used between
+    // requests; the cache is cleared only when the settings change.
     emit this->requestAvailable(httpMessageRequest);
 
     RLogger::trace("Current thread: \'%p\', object thread: \'%p\'\n", QThread::currentThread(), this->thread());
 
+    // Wait for the reply without a fixed sleep (which added up to a second to
+    // every request). When this client lives in the calling thread its reply
+    // events are delivered here, so process them until the reply arrives;
+    // otherwise its own thread handles the reply and this thread only waits
+    // for the mutex to be released.
     R_LOG_TRACE_MESSAGE("Request mutex -> tryLock.\n");
-    while (!this->requestMutex.tryLock())
+    const bool sameThread = (QThread::currentThread() == this->thread());
+    while (!this->requestMutex.tryLock(sameThread ? 0 : 50))
     {
-        R_LOG_TRACE_MESSAGE("Process events.");
-        QCoreApplication::processEvents();
-        QThread::msleep(1000);
+        if (sameThread)
+        {
+            R_LOG_TRACE_MESSAGE("Process events.");
+            QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+        }
     }
 
     httpMessageReply = this->replyMessage;
@@ -281,6 +290,10 @@ void RHttpClient::setHttpClientSettings(const RHttpClientSettings &httpClientSet
         this->networkManager->setProxy(networkProxy);
     }
     this->networkManager->setTransferTimeout(this->httpClientSettings.getTimeout());
+    // Settings may change certificates, keys or proxy: drop cached TLS
+    // configuration and open connections.
+    this->sslConfiguration.reset();
+    this->networkManager->clearConnectionCache();
     RLogger::debug("Transfer timeout: %d [ms]\n",this->networkManager->transferTimeout());
     R_LOG_TRACE_OUT;
 }
@@ -468,7 +481,11 @@ void RHttpClient::onRequestAvailable(const RHttpMessage &httpMessageRequest)
 
     try
     {
-        networkRequest.setSslConfiguration(this->buildSslConfiguration());
+        if (!this->sslConfiguration.has_value())
+        {
+            this->sslConfiguration = this->buildSslConfiguration();
+        }
+        networkRequest.setSslConfiguration(this->sslConfiguration.value());
     }
     catch (const RError &e)
     {
@@ -505,7 +522,15 @@ void RHttpClient::onRequestAvailable(const RHttpMessage &httpMessageRequest)
     }
     else
     {
-        RLogger::error("HttpClient: Unsupported HTTP method \"%s\".\n", RHttpMessage::httpMethodToString(httpMessageRequest.getMethod()).toUtf8().constData());
+        this->applcationErrorCode = RError::InvalidInput;
+        this->applicationErrorString = QString("Unsupported HTTP method \"%1\".").arg(RHttpMessage::httpMethodToString(httpMessageRequest.getMethod()));
+        RLogger::error("HttpClient: %s\n", this->applicationErrorString.toUtf8().constData());
+
+        // No reply will ever finish: release the waiting sender.
+        R_LOG_TRACE_MESSAGE("Request mutex -> unlock.\n");
+        this->requestMutex.unlock();
+        R_LOG_TRACE_OUT;
+        return;
     }
 
     QObject::connect(this->networkReply, &QIODevice::readyRead, this, &RHttpClient::onReadyRead);
