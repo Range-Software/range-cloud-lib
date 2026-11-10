@@ -1,4 +1,5 @@
 #include <QSslCertificateExtension>
+#include <QSslKey>
 
 #include "rcl_tls_trust_store.h"
 #include "rcl_open_ssl_tool.h"
