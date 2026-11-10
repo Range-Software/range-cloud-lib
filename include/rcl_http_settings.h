@@ -1,8 +1,6 @@
 ﻿#ifndef RCL_HTTP_SETTINGS
 #define RCL_HTTP_SETTINGS
 
-#include <QString>
-
 #include "rcl_tls_key_store.h"
 #include "rcl_tls_trust_store.h"
 

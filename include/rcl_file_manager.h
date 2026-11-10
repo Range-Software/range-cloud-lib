@@ -2,7 +2,6 @@
 #define RCL_FILE_MANAGER_H
 
 #include <QObject>
-#include <QFileInfo>
 #include <QFileSystemWatcher>
 #include <QTimer>
 #include <QMutex>

@@ -1,4 +1,3 @@
-#include <QFile>
 #include <QJsonDocument>
 
 #include <rbl_error.h>
@@ -8,7 +7,6 @@
 #include "rcl_cloud_tool_action.h"
 #include "rcl_cloud_action.h"
 #include "rcl_cloud_ai_query_response.h"
-#include "rcl_cloud_tool_action.h"
 
 Q_DECLARE_METATYPE(RCloudAction);
 

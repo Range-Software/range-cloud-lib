@@ -3,12 +3,12 @@
 
 #include <QObject>
 
-#include "rbl_tool_task.h"
-
 #include "rcl_auth_token.h"
 #include "rcl_http_client.h"
 #include "rcl_cloud_process_info.h"
 #include "rcl_cloud_tool_action.h"
+
+class RToolTask;
 
 class RCloudClient : public QObject
 {

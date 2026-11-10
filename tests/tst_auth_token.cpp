@@ -1,4 +1,4 @@
-#include <QtTest>
+#include <QTest>
 
 #include "rcl_auth_token.h"
 

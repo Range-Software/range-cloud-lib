@@ -1,4 +1,4 @@
-#include <QtTest>
+#include <QTest>
 
 #include "rcl_file_quota.h"
 

@@ -1,5 +1,3 @@
-#include <QJsonArray>
-
 #include "rcl_cloud_process_response.h"
 
 void RCloudProcessResponse::_init(const RCloudProcessResponse *pProcessResponse)

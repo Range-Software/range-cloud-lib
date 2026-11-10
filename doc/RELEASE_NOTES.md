@@ -62,6 +62,13 @@
   client is created, and the certificate expiry warning is logged once per
   configuration instead of on every request
 
+#### Includes
+
+- `rcl_cloud_client.h` forward declares `RToolTask` instead of including
+  `rbl_tool_task.h`, and unused Qt includes are removed from public headers and
+  source files. Tests include `<QTest>` instead of the larger `<QtTest>`. Code that
+  received these headers through this library has to include them directly
+
 ### Bug fixes
 
 - Subject fields with characters outside ASCII, such as `Žilina`, were stored

@@ -2,7 +2,6 @@
 #define RCL_REPORT_RECORD_H
 
 #include <QString>
-#include <QDateTime>
 #include <QJsonObject>
 
 class RReportRecord

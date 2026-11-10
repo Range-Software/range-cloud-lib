@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QMap>
 #include <QString>
-#include <QByteArray>
 
 #include "rcl_open_ssl_tool_settings.h"
 

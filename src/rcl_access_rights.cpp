@@ -1,5 +1,3 @@
-#include <QJsonArray>
-
 #include <rbl_logger.h>
 
 #include "rcl_access_rights.h"

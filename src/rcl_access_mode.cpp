@@ -1,5 +1,3 @@
-#include <QJsonArray>
-
 #include "rcl_access_mode.h"
 
 const RAccessMode::ModeMask RAccessMode::R    = RAccessMode::Read;

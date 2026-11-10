@@ -1,4 +1,4 @@
-#include <QtTest>
+#include <QTest>
 #include <QSslKey>
 
 #include "rcl_open_ssl_tool.h"

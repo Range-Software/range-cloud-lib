@@ -1,7 +1,6 @@
 #ifndef RCL_CLOUD_TOOL_ACTION_H
 #define RCL_CLOUD_TOOL_ACTION_H
 
-#include <QVariant>
 #include <QSharedPointer>
 
 #include <rbl_tool_action.h>

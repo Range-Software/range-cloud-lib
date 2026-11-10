@@ -1,4 +1,4 @@
-#include <QtTest>
+#include <QTest>
 
 #include "rcl_access_mode.h"
 
