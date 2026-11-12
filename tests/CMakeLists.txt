@@ -12,6 +12,7 @@ set(range_cloud_lib_tests
     tst_access_owner
     tst_file_quota
     tst_auth_token
+    tst_http_client
 )
 
 if(APPLE AND RANGE_NATIVE_KEY_TOOL)

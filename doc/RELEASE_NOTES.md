@@ -1,3 +1,26 @@
+## Version 1.3.1
+
+### Bug fixes
+
+- A process could keep running after the application was closed while a request
+  was pending, typically when the Cloud could not be reached. A request sent from
+  a thread of the global thread pool waits for a reply which is delivered by the
+  event loop of the thread `RHttpClient` lives in. Once that event loop ended the
+  reply never arrived, the sender waited forever and the thread pool never
+  finished. `RHttpClient` now aborts its pending request when the application is
+  about to quit (`QCoreApplication::aboutToQuit`) and `sendRequest()` returns
+  `RError::Connection` instead of waiting, also for requests sent after that
+- `RHttpClient` left its pointer to the network reply uninitialized until the
+  first request, so `abort()` called earlier used an invalid pointer
+
+### Improvements
+
+- New unit test `tst_http_client` checks that a sender waiting in another thread
+  is released when the application quits and that a request sent afterwards fails
+  immediately. It needs no network
+
+---
+
 ## Version 1.3.0
 
 ### Improvements

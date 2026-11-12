@@ -9,6 +9,7 @@
 #include <QSslCertificate>
 #include <QSslConfiguration>
 
+#include <atomic>
 #include <optional>
 
 #include "rcl_http_client_settings.h"
@@ -56,6 +57,10 @@ class RHttpClient : public QObject
 
         //! Mutex locking pending request.
         QMutex requestMutex;
+
+        //! True once the application is quitting. No reply can be delivered
+        //! after that, so senders must not wait for one.
+        std::atomic<bool> quitting;
 
         //! TLS configuration built from the settings; loading certificates and
         //! keys is expensive, so it is built once and reset when settings change.
@@ -111,6 +116,9 @@ class RHttpClient : public QObject
         void onUploadProgress(qint64 bytesSent, qint64 bytesTotal);
 
         void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+
+        //! Application is about to quit: abort the pending request and release its sender.
+        void onAboutToQuit();
 
     signals:
 

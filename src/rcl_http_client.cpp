@@ -18,8 +18,11 @@ RHttpClient::RHttpClient(Type type, const RHttpClientSettings &httpClientSetting
     : QObject{parent}
     , type{type}
     , httpClientSettings{httpClientSettings}
+    , networkReply{nullptr}
+    , applcationErrorCode{RError::None}
     , networkErrorCode{QNetworkReply::NoError}
     , httpErrorCode{QHttpServerResponder::StatusCode::Ok}
+    , quitting{false}
 {
     R_LOG_TRACE_IN;
     this->networkManager = new QNetworkAccessManager(this);
@@ -29,6 +32,10 @@ RHttpClient::RHttpClient(Type type, const RHttpClientSettings &httpClientSetting
     QObject::connect(this->networkManager,&QNetworkAccessManager::authenticationRequired,this,&RHttpClient::onAuthenticationRequired);
     QObject::connect(this->networkManager,&QNetworkAccessManager::proxyAuthenticationRequired,this,&RHttpClient::onProxyAuthenticationRequired);
     QObject::connect(this,&RHttpClient::requestAvailable,this,&RHttpClient::onRequestAvailable);
+    if (QCoreApplication::instance())
+    {
+        QObject::connect(QCoreApplication::instance(),&QCoreApplication::aboutToQuit,this,&RHttpClient::onAboutToQuit);
+    }
 
     R_LOG_TRACE_OUT;
 }
@@ -46,7 +53,10 @@ void RHttpClient::sendRequest(const RHttpMessage &httpMessageRequest, RHttpMessa
 
     // Connections (and TLS sessions) are kept alive and re-used between
     // requests; the cache is cleared only when the settings change.
-    emit this->requestAvailable(httpMessageRequest);
+    if (!this->quitting.load())
+    {
+        emit this->requestAvailable(httpMessageRequest);
+    }
 
     RLogger::trace("Current thread: \'%p\', object thread: \'%p\'\n", QThread::currentThread(), this->thread());
 
@@ -59,6 +69,22 @@ void RHttpClient::sendRequest(const RHttpMessage &httpMessageRequest, RHttpMessa
     const bool sameThread = (QThread::currentThread() == this->thread());
     while (!this->requestMutex.tryLock(sameThread ? 0 : 50))
     {
+        if (this->quitting.load())
+        {
+            // The event loop delivering the reply has ended, so the reply will
+            // never arrive. A sender waiting in a thread of the global thread
+            // pool would keep the process running after the application was
+            // closed. The pending request was aborted before the flag was set,
+            // so the mutex is either released by now or still held by this call.
+            R_LOG_TRACE_MESSAGE("Application is quitting, request is abandoned.\n");
+            (void)this->requestMutex.tryLock(0);
+            if (this->applcationErrorCode == RError::None && this->networkErrorCode == QNetworkReply::NoError)
+            {
+                this->applcationErrorCode = RError::Connection;
+                this->applicationErrorString = QString("Request was abandoned because the application is closing.");
+            }
+            break;
+        }
         if (sameThread)
         {
             R_LOG_TRACE_MESSAGE("Process events.");
@@ -306,6 +332,21 @@ void RHttpClient::abort()
         R_LOG_TRACE_MESSAGE("Aborting ...\n");
         QTimer::singleShot(0, this->networkReply, SIGNAL(abort()));
     }
+    R_LOG_TRACE_OUT;
+}
+
+void RHttpClient::onAboutToQuit()
+{
+    R_LOG_TRACE_IN;
+    // Aborting finishes the reply right here, which releases its sender. The
+    // flag is set only afterwards, so a sender which finds it set can rely on
+    // the reply not being finished anymore.
+    if (this->networkReply)
+    {
+        R_LOG_TRACE_MESSAGE("Aborting ...\n");
+        this->networkReply->abort();
+    }
+    this->quitting.store(true);
     R_LOG_TRACE_OUT;
 }
 
