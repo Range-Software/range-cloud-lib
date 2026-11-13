@@ -1,5 +1,7 @@
 #include <QTest>
+#include <QProcess>
 #include <QSslKey>
+#include <QStandardPaths>
 
 #include "rcl_open_ssl_tool.h"
 #include "rcl_security_key_tool.h"
