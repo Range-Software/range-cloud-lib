@@ -11,12 +11,12 @@
     <message>
         <location filename="../src/rcl_cloud_session_manager.cpp" line="13"/>
         <source>Range Software</source>
-        <translation></translation>
+        <translation>Range Software</translation>
     </message>
     <message>
         <location filename="../src/rcl_cloud_session_manager.cpp" line="18"/>
         <source>Range Cloud</source>
-        <translation></translation>
+        <translation>Range Cloud</translation>
     </message>
 </context>
 </TS>
