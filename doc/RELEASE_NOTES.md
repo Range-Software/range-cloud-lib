@@ -12,6 +12,28 @@
   `RError::Connection` instead of waiting, also for requests sent after that
 - `RHttpClient` left its pointer to the network reply uninitialized until the
   first request, so `abort()` called earlier used an invalid pointer
+- `RFileManager` stored each synchronized file in Cloud several times. Local
+  files were compared with the remote file list also before the first list was
+  received (the first request was sent only after the refresh timeout) and with
+  a list which did not include files the manager had just uploaded, so every
+  local file looked missing in Cloud and was uploaded again on each directory
+  change. Local and remote files are now compared only after a fresh remote file
+  list has been received: `start()` requests it immediately and a local change
+  requests a new one (postponed while other actions are running) instead of
+  using the previous list. Results of uploads, updates and removals are applied
+  to the remote file list right away
+- A single save produced a burst of directory change notifications, each of
+  which started a synchronization. `QFileSystemWatcher` delivers them
+  asynchronously, so blocking its signals during the synchronization did not
+  help. Changes are now collected until the local directory has not changed for
+  two seconds
+- `RFileManager` uploads new files with `requestFileReplace()` instead of
+  `requestFileUpload()`, so Cloud removes any other file of the same name owned
+  by the user and a file cannot be stored twice. The new file continues the
+  version of the files it replaced
+- Duplicate remote files (same name, same owner) are cleaned up: the most
+  recently updated one is synchronized and the others are removed.
+  `RFileManager::findRemoteFile()` returns the most recently updated one
 
 ### Improvements
 

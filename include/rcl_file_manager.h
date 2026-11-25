@@ -5,7 +5,6 @@
 #include <QFileSystemWatcher>
 #include <QTimer>
 #include <QMutex>
-#include <QSet>
 
 #include "rcl_cloud_client.h"
 #include "rcl_file_manager_cache.h"
@@ -28,6 +27,10 @@ class RFileManager : public QObject
         QFileSystemWatcher *localFileSystemWatcher;
         //! Remote refresh timer.
         QTimer *remoteRefreshTimer;
+        //! Local change timer.
+        //! Single change (e.g. saving a document) produces a burst of directory change notifications.
+        //! Changes are collected and processed together once the directory has settled.
+        QTimer *localChangeTimer;
         //! List of remote files.
         QList<RFileInfo> remoteFiles;
         //! List of local files.
@@ -38,6 +41,9 @@ class RFileManager : public QObject
 
         //! File manager is running.
         bool isRunning;
+
+        //! Remote file list must be refreshed as soon as running actions are finished.
+        bool remoteRefreshPending;
 
         struct
         {
@@ -52,8 +58,6 @@ class RFileManager : public QObject
             QList<RFileInfo> remoteDownload;
             //! List of remote files to be removed.
             QList<RFileInfo> remoteRemove;
-            //! Set of file paths currently pending upload (to prevent duplicates).
-            QSet<QString> pendingUploadPaths;
         } filesToSync;
 
         static const QString logPrefix;
@@ -89,6 +93,23 @@ class RFileManager : public QObject
 
         //! Initialize cache file.
         void initializeCacheFile();
+
+        //! Request fresh list of remote files.
+        //! Local and remote files are compared only against freshly received remote file list.
+        //! If other actions are still running the request is postponed until they are finished.
+        void requestRemoteRefresh();
+
+        //! Return name of the user owning synchronized files.
+        QString findUserName() const;
+
+        //! Store remote file info (replace existing entry with the same id or append new one).
+        void storeRemoteFile(const RFileInfo &fileInfo);
+
+        //! Remove remote file info with given id.
+        void removeRemoteFile(const QUuid &id);
+
+        //! Finish one running action.
+        void finishRunningAction();
 
         //! Sync files.
         void syncFiles();
@@ -136,6 +157,9 @@ class RFileManager : public QObject
 
         //! Local directory has changed.
         void onLocalDirectoryChanged(const QString &path);
+
+        //! Local directory has settled after one or more changes.
+        void onLocalChangeTimeout();
 
         //! Refresh timeout.
         void onRemoteRefreshTimeout();
