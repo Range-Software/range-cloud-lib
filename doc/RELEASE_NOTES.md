@@ -34,6 +34,10 @@
 - Duplicate remote files (same name, same owner) are cleaned up: the most
   recently updated one is synchronized and the others are removed.
   `RFileManager::findRemoteFile()` returns the most recently updated one
+- `RFileManager::findRemoteFile()` returned a file info with a random id
+  instead of a null id when no remote file matched, because a default
+  constructed `RFileInfo` gets a new id. Callers could not tell that the file
+  was not found and used an id which does not exist in Cloud
 
 ### Improvements
 

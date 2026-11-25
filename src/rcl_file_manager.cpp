@@ -95,18 +95,27 @@ RFileInfo RFileManager::findRemoteFile(const QString &fileName) const
     // Should there be more files with the same name the most recently updated one is returned.
     QString userName = this->findUserName();
 
-    RFileInfo foundFileInfo;
+    // Default constructed file info has a random id and current update time, therefore it cannot be used
+    // as "nothing found yet" - it would win every comparison and its random id would be returned.
+    const RFileInfo *foundFileInfo = nullptr;
     for (const RFileInfo &remoteFileInfo : std::as_const(this->remoteFiles))
     {
         if (remoteFileInfo.getPath() == fileName && remoteFileInfo.getAccessRights().getOwner().getUser() == userName)
         {
-            if (foundFileInfo.getId().isNull() || remoteFileInfo.getUpdateDateTime() > foundFileInfo.getUpdateDateTime())
+            if (!foundFileInfo || remoteFileInfo.getUpdateDateTime() > foundFileInfo->getUpdateDateTime())
             {
-                foundFileInfo = remoteFileInfo;
+                foundFileInfo = &remoteFileInfo;
             }
         }
     }
-    R_LOG_TRACE_RETURN(foundFileInfo);
+    if (foundFileInfo)
+    {
+        R_LOG_TRACE_RETURN(*foundFileInfo);
+    }
+    // Not found - return file info with null id as documented.
+    RFileInfo emptyFileInfo;
+    emptyFileInfo.setId(QUuid());
+    R_LOG_TRACE_RETURN(emptyFileInfo);
 }
 
 void RFileManager::start(uint remoteRefreshTimeout)
